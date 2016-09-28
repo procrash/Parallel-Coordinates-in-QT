@@ -2,6 +2,7 @@
 #include <QApplication>
 
 #include <iostream>
+#include "parallelcoordinatesglobals.h"
 
 using namespace std;
 
