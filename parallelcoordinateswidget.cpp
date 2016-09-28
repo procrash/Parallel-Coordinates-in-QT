@@ -9,10 +9,8 @@
 #include <QPaintEvent>
 
 #include <map>
-
 #include <iostream>
 #include <cstdlib>
-#include <time.h>
 
 #include <tuple>
 
@@ -20,10 +18,16 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+
+#include "datastore.h"
+
 using namespace std;
 
-ParallelCoordinatesWidget::ParallelCoordinatesWidget(QWidget *parent)
+template <class T>
+ParallelCoordinatesWidget<T>::ParallelCoordinatesWidget(QWidget *parent): QWidget(parent)
 {
+    srand (time(NULL));
+
     this->setMouseTracking(true);
     //this->setParent(parent);
 
@@ -34,89 +38,46 @@ ParallelCoordinatesWidget::ParallelCoordinatesWidget(QWidget *parent)
     for (int i=0; i<nrOfDimensions; i++)
         hLayout->addWidget(new QRangeSlider(this));
 
-
-
-   // QTableWidget* table = new QTableWidget(this);
-
-   // vLayout->addWidget(table);
-
     vLayout->addLayout(hLayout);
-
     this->setLayout(vLayout);
 
-    /*
-    this->reorderSliders();
-    this->setMinMaxGUI();
-    */
+
 }
 
-void ParallelCoordinatesWidget::clearDataSet() {
-    this->dataSets.clear();
-    this->minMaxValInitialized = false;
-    this->update();
+template <class T>
+void ParallelCoordinatesWidget<T>::setDataStorePtr(DataStore<T>* dataStore) {
+    this->dataStorePtr = dataStore;
+
+    minValPtr = dataStore->getMinValPtr();
+    maxValPtr = dataStore->getMaxValPtr();
 }
 
-void ParallelCoordinatesWidget::generateRandomDataSet(int nrOfValues) {
-    clearDataSet();
-    srand(time(NULL));
-
-    WIDGET_DATA_TYPE vals[nrOfDimensions];
-
-    for (int count = 0; count < nrOfValues; count++) {
-
-        for (int i=0; i<nrOfDimensions; i++) {
-            vals[i] = (WIDGET_DATA_TYPE)(rand()%1000)/ (WIDGET_DATA_TYPE)(rand()%1000+1);
-        }
-
-        addDataSet(nrOfDimensions, vals);
-    }
-
+template <class T>
+void ParallelCoordinatesWidget<T>::clearDataSet() {
+    dataStorePtr->clearData();
     this->update();
 }
 
 
 
 
-template<class T>
-void ParallelCoordinatesWidget::addDataSet(int dimensions, T*data){
-    DataSet<T> d;
-    for (int i=0; i<dimensions; i++) {
-        d.dimVal[i] = data[i];
-    }
-    dataSets.push_back(d);
+template <class T>
+void ParallelCoordinatesWidget<T>::setMinMaxGUI() {
 
-    if (minMaxValInitialized) {
-        for (int i=0; i<dimensions; i++) {
-            if (minVal[i]>d.dimVal[i]) minVal[i] = d.dimVal[i];
-            if (maxVal[i]<d.dimVal[i]) maxVal[i] = d.dimVal[i];
-        }
-    } else
-    {
-        for (int i=0; i<dimensions; i++) {
-            minVal[i] = maxVal[i] = d.dimVal[i];
-        }
-        minMaxValInitialized = true;
-    }
-}
-
-
-void ParallelCoordinatesWidget::setMinMaxGUI() {
     reorderSliders();
 
     for (int i=0; i<this->sliders.size(); i++) {
-        sliders[i]->setMinVal(minVal[i]);
-        sliders[i]->setMaxVal(maxVal[i]);
-
-        cout << i << ": Minval " << minVal[i] << " MaxVal " << maxVal[i] << endl;
+        sliders[i]->setMinVal(minValPtr[i]);
+        sliders[i]->setMaxVal(maxValPtr[i]);
     }
 
     minMaxGUISet = true;
 }
 
-
-void ParallelCoordinatesWidget::mouseMoveEvent(QMouseEvent *event) {
-    // int mouseX =  event->pos().x();
-    // int mouseY; //  = event->pos().y();
+template <class T>
+void ParallelCoordinatesWidget<T>::mouseMoveEvent(QMouseEvent *event) {
+    int mouseX =  event->pos().x();
+    int mouseY; //  = event->pos().y();
 
     /*
     // Unset highlight as events are not always fired in control...
@@ -130,9 +91,9 @@ void ParallelCoordinatesWidget::mouseMoveEvent(QMouseEvent *event) {
     }*/
 }
 
-void ParallelCoordinatesWidget::reduceDrawingDataSet() {
+template <class T>
+void ParallelCoordinatesWidget<T>::reduceDrawingDataSet() {
 
-    cout << "Reducing..." << endl;
     drawingLinesInNecessary.clear();
 
     map<tuple<qreal, qreal, qreal, qreal>, bool> linesMap;
@@ -173,41 +134,39 @@ void ParallelCoordinatesWidget::reduceDrawingDataSet() {
     }
     cout << "Original amount of Data " << nrOfLines << " reduced to " << nrOfLinesReduced << endl;
 
+    if (this->drawNotInRange) {
+        drawingLinesOutNecessary.clear();
+        map<pair<qreal, qreal>, bool> linesMapOut;
 
-    #ifdef DRAW_NOT_IN_RANGE
-    drawingLinesOutNecessary.clear();
-    map<pair<qreal, qreal>, bool> linesMapOut;
+        for (int i=0; i<drawingLinesOut.size(); i++) {
+            tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry = drawingLinesOut.at(i);
 
-    for (int i=0; i<drawingLinesOut.size(); i++) {
-        tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry = drawingLinesOut.at(i);
+            vector<QLineF> lines = get<0>(entry);
+            vector<QLineF> linesReduced;
 
-        vector<QLineF> lines = get<0>(entry);
-        vector<QLineF> linesReduced;
+            for (int j=0; j<lines.size(); j++) {
 
+                qreal y1 = lines.at(j).y1();
+                qreal y2 = lines.at(j).y2();
 
-
-        for (int j=0; j<lines.size(); j++) {
-
-            qreal y1 = lines.at(j).y1();
-            qreal y2 = lines.at(j).y2();
-
-            pair<qreal, qreal> key(y1,y2);
-            if (linesMapOut.find(key) == linesMapOut.end()) {
-                linesMapOut[key] = true;
-                linesReduced.push_back(lines.at(j));
+                pair<qreal, qreal> key(y1,y2);
+                if (linesMapOut.find(key) == linesMapOut.end()) {
+                    linesMapOut[key] = true;
+                    linesReduced.push_back(lines.at(j));
+                }
             }
-        }
 
-        tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> newEntry(linesReduced, get<1>(entry), get<2>(entry));
-        drawingLinesInNecessary.push_back(newEntry);
+            tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> newEntry(linesReduced, get<1>(entry), get<2>(entry));
+            drawingLinesInNecessary.push_back(newEntry);
+        }
     }
-    #endif
 
 
 
 }
 
-void ParallelCoordinatesWidget::recalculateDrawingLines() {
+template <class T>
+void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
     // this->minMaxGUISet = false;
     // setMinMaxGUI();
@@ -217,7 +176,9 @@ void ParallelCoordinatesWidget::recalculateDrawingLines() {
 
     // Iterate through data and test if data is part of the users selection or not
     // if not, then paint dependecy grey, if paint dependency black
-    for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSets.begin(); it != dataSets.end(); ++it) {
+    vector<DataSet<WIDGET_DATA_TYPE>> *dataSetPtr = dataStorePtr->getDataSet();
+
+    for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSetPtr->begin(); it != dataSetPtr->end(); ++it) {
         DataSet<WIDGET_DATA_TYPE> ds = *it;
 
         // vector<QPointF> linePoints;
@@ -227,7 +188,8 @@ void ParallelCoordinatesWidget::recalculateDrawingLines() {
         QPointF lastPoint;
 
         QColor color;
-        QColor colorLineIsPart("#000000");
+        // QColor colorLineIsPart("#000000");
+        QColor colorLineIsPart(rand()%255,rand()%255, rand()%255);
         QColor colorLineIsNotPart("#AAAAAA");
 
         bool lineIsPart = true;
@@ -277,33 +239,34 @@ void ParallelCoordinatesWidget::recalculateDrawingLines() {
     update();
 }
 
-void ParallelCoordinatesWidget::paintEvent(QPaintEvent *evt) {
+template <class T>
+void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
 
-    QRect rct = evt->rect();
+    // QRect rct = evt->rect();
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    #ifdef DRAW_NOT_IN_RANGE
-    if (drawingLinesOut.size()>1)
-    {
-        for (int i=0; i<drawingLinesOut.size(); i++) {
+    if (this->drawNotInRange) {
+        if (drawingLinesOut.size()>1)
+        {
+            for (int i=0; i<drawingLinesOut.size(); i++) {
 
-             tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry = drawingLinesOut.at(i);
+                 tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry = drawingLinesOut.at(i);
 
-             vector<QLineF> lines = get<0>(entry);
-             QColor color = get<1>(entry);
+                 vector<QLineF> lines = get<0>(entry);
+                 QColor color = get<1>(entry);
 
-             QPen pen(color, 2 , Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
-             painter.setPen(pen);
+                 QPen pen(color, LINE_THICKNESS , Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+                 painter.setPen(pen);
 
-             for (int k=0; k<lines.size(); k++) {
-                 QLineF line = lines[k];
-                 painter.drawLine(line);
-             }
+                 for (int k=0; k<lines.size(); k++) {
+                     QLineF line = lines[k];
+                     painter.drawLine(line);
+                 }
+            }
         }
     }
-    #endif
 
         if (drawingLinesIn.size()>1)
         {
@@ -314,7 +277,7 @@ void ParallelCoordinatesWidget::paintEvent(QPaintEvent *evt) {
                  vector<QLineF> lines = get<0>(entry);
                  QColor color = get<1>(entry);
 
-                 QPen pen(color, 2 , Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+                 QPen pen(color, LINE_THICKNESS , Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
                  painter.setPen(pen);
 
                  for (int k=0; k<lines.size(); k++) {
@@ -327,9 +290,9 @@ void ParallelCoordinatesWidget::paintEvent(QPaintEvent *evt) {
 
 }
 
-void ParallelCoordinatesWidget::reorderSliders() {
+template <class T>
+void ParallelCoordinatesWidget<T>::reorderSliders() {
 	
-
     // Find QRange sliders in children and sort them according to their Xorder in a vector
     multimap<int, QRangeSlider*> rangeSlidersOrdered;
 
@@ -346,3 +309,10 @@ void ParallelCoordinatesWidget::reorderSliders() {
     }
 
 }
+
+template<class T>
+void ParallelCoordinatesWidget<T>::setDrawNotInRange(bool drawNotInRange) {
+    this->drawNotInRange = drawNotInRange;
+}
+
+
