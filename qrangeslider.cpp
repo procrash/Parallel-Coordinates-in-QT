@@ -15,8 +15,48 @@ QRangeSlider::QRangeSlider(QWidget *parent)
     this->setMouseTracking(true);
     this->setMinimumWidth(100);
 
+
+
+    this->textBoxWidthTopAndBottom = 60;
+    this->textBoxHeightTopAndBottom = 20;
+
+    // Position Textboxes Top and Bottom
+    lineEditTop.setParent(this);
+    lineEditTop.setMaximumWidth(textBoxWidthTopAndBottom);
+    lineEditTop.setMinimumWidth(textBoxWidthTopAndBottom);
+    lineEditTop.setAlignment(Qt::AlignCenter);
+
+
+    lineEditBottom.setParent(this);
+    lineEditBottom.setMaximumWidth(textBoxWidthTopAndBottom);
+    lineEditBottom.setMinimumWidth(textBoxWidthTopAndBottom);
+    lineEditBottom.setAlignment(Qt::AlignCenter);
+
+
+    lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
+    lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
+
+    //Always last action, otherwise TextBoxes seem to be visible
+    lineEditTop.setVisible(false);
+    lineEditBottom.setVisible(false);
+
 }
 
+void QRangeSlider::resizeEvent(QResizeEvent * event) {
+    xPositionSliderBar = 15+20;
+
+    textBoxLocationTopX = (xPositionSliderBar)-50/2;
+    textBoxLocationTopY = slideBarStartY;
+
+    textBoxLocationBottomX = (xPositionSliderBar)-50/2;
+    int height = this->size().height();
+    // height=200;
+    textBoxLocationBottomY = slideBarStartY+height-60;
+
+    lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
+    lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
+
+}
 
 WIDGET_DATA_TYPE QRangeSlider::getCurrentSetMinVal() {
     return this->currentSetMinVal;
@@ -202,6 +242,14 @@ void QRangeSlider::mousePressEvent(QMouseEvent *event) {
         int x = event->x();
         int y = event->y();
 
+        if (!hitTestTopTextBox(x,y)) {
+            lineEditTop.setVisible(false);
+        }
+
+        if (!hitTestBottomTextBox(x,y)) {
+            lineEditBottom.setVisible(false);
+        }
+
 
         if (hitTestTopGrabHandle(x,y)) {
             // Mouse is situated in minVal grab handle
@@ -218,6 +266,32 @@ void QRangeSlider::mousePressEvent(QMouseEvent *event) {
     }
 }
 
+
+void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
+    if (event->buttons() == Qt::LeftButton) {
+        int x = event->x();
+        int y = event->y();
+
+
+        if (hitTestTopTextBox(x,y)) {
+
+            cout << "Double click top" << endl;
+
+            lineEditTop.setVisible(true);
+            lineEditTop.focusWidget();
+
+        } else
+            if (hitTestBottomTextBox(x,y)) {
+
+                cout << "Double click bottom" << endl;
+
+                lineEditBottom.setVisible(true);
+                lineEditBottom.focusWidget();
+
+            }
+    }
+}
+
 void QRangeSlider::mouseReleaseEvent(QMouseEvent *event) {
     mousePressed=false;
 
@@ -228,6 +302,11 @@ void QRangeSlider::mouseReleaseEvent(QMouseEvent *event) {
     update();
 }
 
+void QRangeSlider::hideTextboxesIfNecessary() {
+    lineEditTop.setVisible(false);
+    lineEditBottom.setVisible(false);
+}
+
 //TODO: remove
 void QRangeSlider::enterEvent(QEvent * event) {
 }
@@ -235,6 +314,7 @@ void QRangeSlider::enterEvent(QEvent * event) {
 void QRangeSlider::leaveEvent(QEvent * event) {
     cout << "Leaving" << endl;
     unsetHighlights();
+    // hideTextboxesIfNecessary();
     update();
 }
 
@@ -388,14 +468,15 @@ void QRangeSlider::paintSlider(QPainter* painter, int x, int y , int width, int 
 
 
     // TODO: Those values should be made global and const
+    /*
     this->textBoxLocationTopX=x-50/2;
     this->textBoxLocationTopY=y;
 
     this->textBoxLocationBottomX=x-50/2;
     this->textBoxLocationBottomY=y+height-20;
+    */
 
-    this->textBoxWidthTopAndBottom = 60;
-    this->textBoxHeightTopAndBottom = 20;
+
 
 
 

@@ -15,6 +15,8 @@ class ParallelCoordinatesWidget : public QWidget
 {
 private:
 
+    vector<QRangeSlider*> slidersUnordered;
+
     bool drawNotInRange = false;
 
     DataStore<T>* dataStorePtr=NULL;

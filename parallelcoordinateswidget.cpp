@@ -35,8 +35,11 @@ ParallelCoordinatesWidget<T>::ParallelCoordinatesWidget(QWidget *parent): QWidge
 
     QHBoxLayout* hLayout = new QHBoxLayout;
 
-    for (int i=0; i<nrOfDimensions; i++)
-        hLayout->addWidget(new QRangeSlider(this));
+    for (int i=0; i<nrOfDimensions; i++) {
+        QRangeSlider* aSlider = new QRangeSlider(this);
+        this->slidersUnordered.push_back(aSlider);
+        hLayout->addWidget(aSlider);
+    }
 
     vLayout->addLayout(hLayout);
     this->setLayout(vLayout);
@@ -293,12 +296,23 @@ void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
 template <class T>
 void ParallelCoordinatesWidget<T>::reorderSliders() {
 	
+
     // Find QRange sliders in children and sort them according to their Xorder in a vector
     multimap<int, QRangeSlider*> rangeSlidersOrdered;
 
-    foreach (QRangeSlider* slider, findChildren<QRangeSlider*>()) {
+    for (vector<QRangeSlider*>::iterator it = slidersUnordered.begin(); it!=slidersUnordered.end(); ++it) {
+        QRangeSlider* slider = *it;
         rangeSlidersOrdered.insert(pair<int, QRangeSlider*>(slider->pos().x(), slider));
     }
+
+    /*
+    foreach (QRangeSlider* slider, findChildren<QRangeSlider*>()) {
+        QRangeSlider* obj =  dynamic_cast<QRangeSlider*>(slider);
+        if (obj!=NULL) {
+            rangeSlidersOrdered.insert(pair<int, QRangeSlider*>(slider->pos().x(), slider));
+        }
+    }
+    */
 
     this->sliders.clear();
 

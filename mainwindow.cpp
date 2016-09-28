@@ -150,6 +150,7 @@ void MainWindow::on_actionGenerate_Random_Data_triggered()
     dataStore.generateRandomDataSet(20);
     this->parallelCoordinatesPtr->setDataStorePtr(&dataStore);
     this->view3dPtr->setDataStorePtr(&dataStore);
+
     this->parallelCoordinatesPtr->setMinMaxGUI();
     this->parallelCoordinatesPtr->recalculateDrawingLines();
 
