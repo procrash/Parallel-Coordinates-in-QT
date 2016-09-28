@@ -1,33 +1,32 @@
 #pragma once
 #include <QWidget>
-#include "qrangeslider.h"
 #include <vector>
 #include <QDebug>
 #include <iostream>
+
+#include "qrangeslider.h"
 #include "parallelcoordinatesglobals.h"
+#include "datastore.h"
 
 using namespace std;
 
 template<class T>
-struct DataSet{
-    T dimVal[nrOfDimensions];
-};
-
 class ParallelCoordinatesWidget : public QWidget
 {
 private:
-  //  vector<QRangeSlider> sliders;
-    vector<DataSet<WIDGET_DATA_TYPE>> dataSets;
 
-    vector<tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>>> drawingLinesIn;
-    vector<tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>>> drawingLinesOut;
+    bool drawNotInRange = false;
 
-    vector<tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>>> drawingLinesInNecessary;
-    vector<tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>>> drawingLinesOutNecessary;
+    DataStore<T>* dataStorePtr=NULL;
 
+    T* minValPtr;
+    T* maxValPtr;
 
-    double minVal[nrOfDimensions];
-    double maxVal[nrOfDimensions];
+    vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesIn;
+    vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesOut;
+
+    vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesInNecessary;
+    vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesOutNecessary;
 
     bool minMaxValInitialized = false;
     bool minMaxGUISet = false;
@@ -37,8 +36,6 @@ private:
     void reorderSliders();
     void reduceDrawingDataSet();
 
-
-
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -46,15 +43,10 @@ public:
     ParallelCoordinatesWidget(QWidget *parent = 0);
 
     void clearDataSet();
-
-    void generateRandomDataSet(int nrOfValues);
     void recalculateDrawingLines();
-
-    template<class T>
-    void addDataSet(int dimenions, T*data);
     void setMinMaxGUI();
+    void setDataStorePtr(DataStore<T>* dataStore);
 
-
-
+    void setDrawNotInRange(bool drawNotInRange);
 };
 

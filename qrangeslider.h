@@ -28,8 +28,8 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
-    virtual void enterEvent(QEvent * event);
-    virtual void leaveEvent(QEvent * event);
+    virtual void enterEvent(QEvent * event) Q_DECL_OVERRIDE;
+    virtual void leaveEvent(QEvent * event) Q_DECL_OVERRIDE;
 
 
 private:

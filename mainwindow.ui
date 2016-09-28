@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>892</width>
-    <height>1266</height>
+    <width>589</width>
+    <height>412</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,27 +15,28 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QFormLayout" name="formLayout">
-    <item row="4" column="1">
-     <widget class="ParallelCoordinatesWidget" name="parallelCoordinates" native="true">
+    <item row="1" column="1">
+     <widget class="QWidget" name="parallelCoordinatesPlace" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>300</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QOpenGLWidget" name="view3dSpace">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>400</height>
-       </size>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
      </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QOpenGLWidget" name="openGLWidget"/>
     </item>
    </layout>
   </widget>
@@ -44,7 +45,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>892</width>
+     <width>589</width>
      <height>22</height>
     </rect>
    </property>
@@ -52,15 +53,29 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionDiscover_Network"/>
+    <widget class="QMenu" name="menuData">
+     <property name="title">
+      <string>Data</string>
+     </property>
+     <addaction name="actionGenerate_Random_Data"/>
+     <addaction name="actionLoad_Default_Data"/>
+     <addaction name="actionLoad_Data_from_File"/>
+    </widget>
     <addaction name="actionQuit"/>
-    <addaction name="actionStart_Discovery_Server"/>
     <addaction name="separator"/>
-    <addaction name="actionTest"/>
     <addaction name="actionOpen"/>
     <addaction name="actionCalc"/>
+    <addaction name="actionTest"/>
+    <addaction name="menuData"/>
+   </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionDraw_data_out_of_range"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuOptions"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -76,21 +91,6 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionDiscover_Network">
-   <property name="text">
-    <string>Discover Network</string>
-   </property>
-  </action>
-  <action name="actionStart_Discovery_Server">
-   <property name="text">
-    <string>Start Discovery Server</string>
-   </property>
-  </action>
-  <action name="actionTest">
-   <property name="text">
-    <string>Test</string>
-   </property>
-  </action>
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
@@ -101,17 +101,36 @@
     <string>Calc</string>
    </property>
   </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>test</string>
+   </property>
+  </action>
+  <action name="actionDraw_data_out_of_range">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>draw data out of range</string>
+   </property>
+  </action>
+  <action name="actionGenerate_Random_Data">
+   <property name="text">
+    <string>Generate Random Data</string>
+   </property>
+  </action>
+  <action name="actionLoad_Default_Data">
+   <property name="text">
+    <string>Load Default Data</string>
+   </property>
+  </action>
+  <action name="actionLoad_Data_from_File">
+   <property name="text">
+    <string>Load Data from File</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>ParallelCoordinatesWidget</class>
-   <extends>QWidget</extends>
-   <header>parallelcoordinateswidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
-

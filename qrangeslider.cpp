@@ -13,7 +13,6 @@ using namespace std;
 QRangeSlider::QRangeSlider(QWidget *parent)
 {
     this->setMouseTracking(true);
-    //this->setParent(parent);
     this->setMinimumWidth(100);
 
 }
@@ -63,11 +62,6 @@ uint64_t QRangeSlider::getYPositionForVal(WIDGET_DATA_TYPE val) {
 
         retVal += ret2;
 
-        /*
-        if (val<minVal) {
-            cout << "Problem, minVal is not correct minVal:" << minVal << " val:" << val << endl;
-        }
-        */
 
     }
 
@@ -116,7 +110,6 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
         newVal = (double)y*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
 
     }
-
 
 
     if (minValGrab || maxValGrab) {        
