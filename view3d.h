@@ -5,6 +5,12 @@
 
 #include <parallelcoordinatesglobals.h>
 #include "datastore.h"
+
+// For testing only
+
+#include <time.h>
+#include <stdlib.h>
+
 using namespace std;
 
 template<class T>
@@ -37,12 +43,27 @@ private:
     void setYRotation(int angle);
     void setZRotation(int angle);
 
+    // For testing purposes only...
+    static const int resX = 100;
+    static const int resY = 100;
+    float testData[resX*resY];
+
+
 public:
     View3D(QWidget *parent)
            : QOpenGLWidget(parent) {
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+
+        // For testing purposes only...
+        srand (time(NULL));
+
+        for (int y=0; y<resY; y++)
+            for (int x=0; x<resX;x++) {
+                float randomNr = (float)(rand()%100);
+                testData[resX+resY*resX] = randomNr;
+            }
     }
 
     void setDataStorePtr(DataStore<T>* dataStorePtr);
