@@ -30,17 +30,17 @@ template<class T>
 void View3D<T>::initializeGL()
 {
 
-
-
-     glClearColor(0,0,0,255);
+    glClearColor(0,0,0,255);
 
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+   // glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
-  //  glEnable(GL_LIGHTING);
-  //  glEnable(GL_LIGHT0);
+    // glEnable(GL_LIGHTING);
+    // glEnable(GL_LIGHT0);
     glEnable(GL_MULTISAMPLE);
+
+
     /*
     static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -51,13 +51,18 @@ template<class T>
 void View3D<T>::paintGL()
 {
 
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(500.0, 500.0, -1+distance);
+    glTranslatef(500, 500, -1+distance);
 
     glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
+
+    glTranslatef(-500, -500, -1+distance);
+
 
     //glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT);
@@ -65,18 +70,69 @@ void View3D<T>::paintGL()
 
     int xDist = 10;
     int yDist = 10;
+    int zDist = 10;
 
+    glPointSize(3.0f);
+
+//    if (dataStorePtr!=NULL) {
+
+    int nrPointsX = 100;
+    int nrPointsY = 100;
+
+    for (int y = 0; y<nrPointsY-1; y++) {
+      glBegin(GL_TRIANGLE_STRIP);
+      for (int x = 0; x<nrPointsX; x++) {
+        float z1 = testData[y*resY+x];
+        float z2 = testData[(y+1)*resY+x];
+
+        glVertex3f(x*xDist,  y*yDist, z1);
+        glVertex3f(x*xDist,  (y+1)*yDist, z2);
+      }
+      glEnd();
+    }
+
+        /*
+        int i = 0;
+        for (int x = 0; x<100; x++) {
+            for (int z=0; z<100; z++) {
+
+                vector<DataSet<WIDGET_DATA_TYPE>>* dataSets = dataStorePtr->getDataSet();
+
+                if (i<dataSets->size()-1) i++; else i=0;
+                DataSet<WIDGET_DATA_TYPE> data = dataSets->at(i);
+
+
+                WIDGET_DATA_TYPE val;
+
+                val = data.dimVal[1];
+                double dVal = (double)val;
+
+                WIDGET_DATA_TYPE min = dataStorePtr->getMinValPtr()[1];
+                WIDGET_DATA_TYPE max = dataStorePtr->getMaxValPtr()[1];
+
+                dVal/=dVal*500/(max-min);
+
+                glVertex3f(x*xDist,  z*zDist, dVal);
+
+            }
+        }
+        */
+       //  glEnd();
+        //}
+
+    /*
     if (this->dataSetPtr!=NULL) {
         glPointSize(3.0f);
         glBegin(GL_POINTS);
         for (uint64_t i=0; i<dataSetPtr->size(); i++) {
             for (int j=0; j<nrOfDimensions; j++) {
-                // glVertex3f(i*xDist, j*yDist, dataSetPtr->at(i).dimVal[j] / );
+                glVertex3f(i*xDist, j*yDist, 0 /dataSetPtr->at(i).dimVal[j] / );
             }
         }
         glEnd();
     }
-    //    glEnd();
+    */
+
 }
 
 template<class T>
@@ -136,6 +192,8 @@ void View3D<T>::mouseMoveEvent(QMouseEvent *event)
         setXRotation(xRot + 8 * dy);
         setZRotation(zRot + 8 * dx);
     }
+
+
     lastPos = event->pos();
 }
 
@@ -161,4 +219,6 @@ template<class T>
 void View3D<T>::setDataStorePtr(DataStore<T>* dataStorePtr){
     this->dataStorePtr = dataStorePtr;
 }
+
+
 
