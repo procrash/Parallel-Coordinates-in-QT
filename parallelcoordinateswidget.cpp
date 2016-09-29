@@ -137,9 +137,10 @@ void ParallelCoordinatesWidget<T>::reduceDrawingDataSet() {
     }
     cout << "Original amount of Data " << nrOfLines << " reduced to " << nrOfLinesReduced << endl;
 
+
     if (this->drawNotInRange) {
         drawingLinesOutNecessary.clear();
-        map<pair<qreal, qreal>, bool> linesMapOut;
+        map<tuple<qreal, qreal, qreal, qreal>, bool> linesMapOut;
 
         for (int i=0; i<drawingLinesOut.size(); i++) {
             tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry = drawingLinesOut.at(i);
@@ -149,10 +150,13 @@ void ParallelCoordinatesWidget<T>::reduceDrawingDataSet() {
 
             for (int j=0; j<lines.size(); j++) {
 
+                qreal x1 = lines.at(j).x1();
+                qreal x2 = lines.at(j).x2();
+
                 qreal y1 = lines.at(j).y1();
                 qreal y2 = lines.at(j).y2();
 
-                pair<qreal, qreal> key(y1,y2);
+                tuple<qreal, qreal, qreal, qreal> key(x1, y1,x2, y2);
                 if (linesMapOut.find(key) == linesMapOut.end()) {
                     linesMapOut[key] = true;
                     linesReduced.push_back(lines.at(j));
@@ -160,9 +164,10 @@ void ParallelCoordinatesWidget<T>::reduceDrawingDataSet() {
             }
 
             tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> newEntry(linesReduced, get<1>(entry), get<2>(entry));
-            drawingLinesInNecessary.push_back(newEntry);
+            drawingLinesOutNecessary.push_back(newEntry);
         }
     }
+
 
 
 
@@ -227,10 +232,11 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
         tuple<vector<QLineF>, QColor, vector<WIDGET_DATA_TYPE>> entry(lines,color, values);
 
-        if (lineIsPart) {
+
+        if (lineIsPart==true) {
             drawingLinesIn.push_back(entry);
         } else {
-            drawingLinesOut.push_back(entry);
+           drawingLinesOut.push_back(entry);
         }
     }
 
@@ -239,16 +245,26 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
     drawingLinesIn = drawingLinesInNecessary;
     drawingLinesOut = drawingLinesOutNecessary;
 
+    renderLines();
+
     update();
 }
 
 template <class T>
-void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
+void ParallelCoordinatesWidget<T>::renderLines() {
+    QPixmap result(this->size().width(), this->size().height());
 
-    // QRect rct = evt->rect();
+    const QPalette &pal = this->palette();
+    QPalette::ColorRole bg = this->backgroundRole();
+    QBrush brush = pal.brush(bg);
 
-    QPainter painter(this);
+    QPainter painter;
+
+    painter.begin(&result);
+
     painter.setRenderHint(QPainter::Antialiasing);
+
+    painter.fillRect(0,0, this->size().width(), this->size().height(), brush);
 
     if (this->drawNotInRange) {
         if (drawingLinesOut.size()>1)
@@ -290,7 +306,20 @@ void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
             }
         }
 
+        painter.end();
 
+        this->pm = result;
+}
+
+template <class T>
+void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
+
+    // QRect rct = evt->rect();
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    painter.drawPixmap(0,0,this->size().width(), this->size().height(), pm);
 }
 
 template <class T>
@@ -304,15 +333,6 @@ void ParallelCoordinatesWidget<T>::reorderSliders() {
         QRangeSlider* slider = *it;
         rangeSlidersOrdered.insert(pair<int, QRangeSlider*>(slider->pos().x(), slider));
     }
-
-    /*
-    foreach (QRangeSlider* slider, findChildren<QRangeSlider*>()) {
-        QRangeSlider* obj =  dynamic_cast<QRangeSlider*>(slider);
-        if (obj!=NULL) {
-            rangeSlidersOrdered.insert(pair<int, QRangeSlider*>(slider->pos().x(), slider));
-        }
-    }
-    */
 
     this->sliders.clear();
 

@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     qrangeslider.cpp \
     parallelcoordinateswidget.cpp \
     view3d.cpp \
-    datastore.cpp
+    datastore.cpp \
+    textboxfocusobservable.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -26,7 +27,9 @@ HEADERS  += mainwindow.h \
     mainwindow.h \
     view3d.h \
     dataset.h \
-    datastore.h
+    datastore.h \
+    textboxfocusedobserver.h \
+    textboxfocusedobservable.h
 
 FORMS    += mainwindow.ui \
     mainwindow.ui

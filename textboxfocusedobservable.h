@@ -1,11 +1,28 @@
-#ifndef TEXTBOXFOCUSOBSERVABLE_H
-#define TEXTBOXFOCUSOBSERVABLE_H
+#pragma once
 
+#include <vector>
+#include <algorithm>
+#include "textboxfocusedobserver.h"
 
-class TextboxFocusObservable
+using namespace std;
+class TextboxFocusedObservable
 {
 public:
-    TextboxFocusObservable();
-};
+    TextboxFocusedObservable();
 
-#endif // TEXTBOXFOCUSOBSERVABLE_H
+    vector<TexboxFocusedObserver> observers;
+
+    void registerTextBoxFocusedObservable(TexboxFocusedObserver observer) {
+        if (find(observers.begin(), observers.end(), observer)==observers.end()) {
+            observers.push_back(observer);
+        }
+    }
+
+    void unregisterTextBoxFocusedObservable(TexboxFocusedObserver observer) {
+        if (find(observers.begin(), observers.end(), observer)!=observers.end()) {
+            observers.erase(remove(observers.begin(), observers.end(), observer), observers.end());
+        }
+    }
+
+
+};

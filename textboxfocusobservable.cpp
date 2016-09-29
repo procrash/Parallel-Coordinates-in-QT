@@ -1,6 +1,6 @@
-#include "textboxfocusobservable.h"
+#include "textboxfocusedobservable.h"
 
-TextboxFocusObservable::TextboxFocusObservable()
+TextboxFocusedObservable::TextboxFocusedObservable()
 {
 
 }

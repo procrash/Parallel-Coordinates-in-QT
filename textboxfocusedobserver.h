@@ -1,4 +1,14 @@
-#ifndef TEXTBOXFOCUSEDOBSERVER_H
-#define TEXTBOXFOCUSEDOBSERVER_H
+#pragma once
 
-#endif // TEXTBOXFOCUSEDOBSERVER_H
+class TexboxFocusedObserver{
+    virtual void neighborhoodTextboxFocused(){
+
+    }
+
+
+public:
+    bool operator==(const TexboxFocusedObserver& obs)
+    {
+        return this==&obs;
+    }
+};

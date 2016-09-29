@@ -35,8 +35,11 @@ private:
 
     vector<QRangeSlider*> sliders;
 
+    QPixmap pm;
+
     void reorderSliders();
     void reduceDrawingDataSet();
+    void renderLines();
 
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;

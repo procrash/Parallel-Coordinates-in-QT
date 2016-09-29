@@ -6,7 +6,11 @@
 
 #include "parallelcoordinatesglobals.h"
 
-class QRangeSlider : public QWidget
+#include "textboxfocusedobservable.h"
+#include "textboxfocusedobserver.h"
+
+
+class QRangeSlider : public QWidget, TextboxFocusedObservable, TexboxFocusedObserver
 {
 public:
     QRangeSlider(QWidget *parent = 0);
@@ -26,7 +30,7 @@ public:
     double getSliderWidth();
     double getCircleRadius();
     void unsetHighlights();
-
+    void neighborhoodTextboxFocused();
 
 
 

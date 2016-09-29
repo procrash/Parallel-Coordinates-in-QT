@@ -10,12 +10,12 @@
 
 using namespace std;
 
+
+
 QRangeSlider::QRangeSlider(QWidget *parent)
 {
     this->setMouseTracking(true);
     this->setMinimumWidth(100);
-
-
 
     this->textBoxWidthTopAndBottom = 60;
     this->textBoxHeightTopAndBottom = 20;
@@ -40,6 +40,10 @@ QRangeSlider::QRangeSlider(QWidget *parent)
     lineEditTop.setVisible(false);
     lineEditBottom.setVisible(false);
 
+}
+
+void QRangeSlider::neighborhoodTextboxFocused() {
+    unsetHighlights();
 }
 
 void QRangeSlider::resizeEvent(QResizeEvent * event) {
