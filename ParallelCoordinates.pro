@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-
+QMAKE_MAC_SDK = macosx10.12
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ParallelCoordinates 
@@ -13,24 +13,21 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
+    mainwindow.cpp \
     qrangeslider.cpp \
     parallelcoordinateswidget.cpp \
     view3d.cpp \
     datastore.cpp \
-    textboxfocusobservable.cpp
+    qrangesliderobserver.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
     parallelcoordinateswidget.h \
     parallelcoordinatesglobals.h \
-    mainwindow.h \
     view3d.h \
     dataset.h \
     datastore.h \
-    textboxfocusedobserver.h \
-    textboxfocusedobservable.h
+    qrangesliderobserver.h
 
-FORMS    += mainwindow.ui \
-    mainwindow.ui
+FORMS    += mainwindow.ui
 

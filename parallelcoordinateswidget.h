@@ -8,14 +8,18 @@
 #include "parallelcoordinatesglobals.h"
 #include "datastore.h"
 
+#include "qrangesliderobserver.h"
+
 using namespace std;
 
 template<class T>
-class ParallelCoordinatesWidget : public QWidget
+class ParallelCoordinatesWidget : public QWidget,
+                                  public QRangeSliderObserver
 {
 private:
 
     vector<QRangeSlider*> slidersUnordered;
+    vector<QColor> dataColorIsPart;
 
     bool drawNotInRange = false;
 
@@ -29,6 +33,8 @@ private:
 
     vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesInNecessary;
     vector<tuple<vector<QLineF>, QColor, vector<T>>> drawingLinesOutNecessary;
+
+    vector<int> dataOrder;
 
     bool minMaxValInitialized = false;
     bool minMaxGUISet = false;
@@ -53,5 +59,10 @@ public:
     void setDataStorePtr(DataStore<T>* dataStore);
 
     void setDrawNotInRange(bool drawNotInRange);
+
+
+    void qrangeSliderTextboxFocused(QRangeSlider* source);
+    void qrangeSliderMinMaxValChanged(QRangeSlider* source);
+
 };
 

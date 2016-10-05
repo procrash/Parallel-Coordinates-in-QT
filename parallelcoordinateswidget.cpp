@@ -21,6 +21,8 @@
 
 #include "datastore.h"
 
+
+
 using namespace std;
 
 template <class T>
@@ -39,7 +41,18 @@ ParallelCoordinatesWidget<T>::ParallelCoordinatesWidget(QWidget *parent): QWidge
         QRangeSlider* aSlider = new QRangeSlider(this);
         this->slidersUnordered.push_back(aSlider);
         hLayout->addWidget(aSlider);
+
+        // define data order
+        dataOrder.push_back(i);
     }
+
+
+    for (int j=0; j<this->slidersUnordered.size();j++) {
+        QRangeSlider* aSlider = this->slidersUnordered.at(j);
+
+        this->slidersUnordered.at(j)->registerQRangeSliderObserver(this);
+    }
+
 
     vLayout->addLayout(hLayout);
     this->setLayout(vLayout);
@@ -47,17 +60,27 @@ ParallelCoordinatesWidget<T>::ParallelCoordinatesWidget(QWidget *parent): QWidge
 
 }
 
+
+
 template <class T>
 void ParallelCoordinatesWidget<T>::setDataStorePtr(DataStore<T>* dataStore) {
     this->dataStorePtr = dataStore;
 
     minValPtr = dataStore->getMinValPtr();
     maxValPtr = dataStore->getMaxValPtr();
+
+    vector<DataSet<WIDGET_DATA_TYPE>> *dataSetPtr = dataStorePtr->getDataSet();
+
+    for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSetPtr->begin(); it != dataSetPtr->end(); ++it) {
+         QColor colorLineIsPart(rand()%255,rand()%255, rand()%255);
+         dataColorIsPart.push_back(colorLineIsPart);
+    }
 }
 
 template <class T>
 void ParallelCoordinatesWidget<T>::clearDataSet() {
     dataStorePtr->clearData();
+    dataColorIsPart.clear();
     this->update();
 }
 
@@ -79,8 +102,8 @@ void ParallelCoordinatesWidget<T>::setMinMaxGUI() {
 
 template <class T>
 void ParallelCoordinatesWidget<T>::mouseMoveEvent(QMouseEvent *event) {
-    int mouseX =  event->pos().x();
-    int mouseY; //  = event->pos().y();
+    //  int mouseX =  event->pos().x();
+    // int mouseY; //  = event->pos().y();
 
     /*
     // Unset highlight as events are not always fired in control...
@@ -186,9 +209,12 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
     // if not, then paint dependecy grey, if paint dependency black
     vector<DataSet<WIDGET_DATA_TYPE>> *dataSetPtr = dataStorePtr->getDataSet();
 
-    for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSetPtr->begin(); it != dataSetPtr->end(); ++it) {
-        DataSet<WIDGET_DATA_TYPE> ds = *it;
+    uint64_t colorIdx = 0;
 
+    for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSetPtr->begin(); it != dataSetPtr->end(); ++it) {
+            DataSet<WIDGET_DATA_TYPE> ds = *it;
+
+            // int idx = dataOrder.at(idxPos);
         // vector<QPointF> linePoints;
         vector<QLineF> lines;
 
@@ -197,7 +223,10 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
         QColor color;
         // QColor colorLineIsPart("#000000");
-        QColor colorLineIsPart(rand()%255,rand()%255, rand()%255);
+        QColor colorLineIsPart = dataColorIsPart.at(colorIdx);
+
+        colorIdx++;
+
         QColor colorLineIsNotPart("#AAAAAA");
 
         bool lineIsPart = true;
@@ -208,10 +237,13 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
         foreach (QRangeSlider* slider, this->sliders) {
 
-            int xPos = slider->pos().x()+slider->getXPositionBar()+slider->getSliderWidth()/2;
-            int yPos = slider->getYPositionForVal(ds.dimVal[i]);
+            int idxPos = dataOrder.at(i);
 
-            if (slider->getCurrentSetMinVal()>ds.dimVal[i] || slider->getCurrentSetMaxVal()<ds.dimVal[i]) {
+
+            int xPos = slider->pos().x()+slider->getXPositionBar()+slider->getSliderWidth()/2;
+            int yPos = slider->getYPositionForVal(ds.dimVal[idxPos]);
+
+            if (slider->getCurrentSetMinVal()>ds.dimVal[idxPos] || slider->getCurrentSetMaxVal()<ds.dimVal[idxPos]) {
                 // Data is out of selection scope, paint it grey
                 lineIsPart = false;
                 color = colorLineIsNotPart;
@@ -249,6 +281,22 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
     update();
 }
+
+
+template <class T>
+void ParallelCoordinatesWidget<T>::qrangeSliderTextboxFocused(QRangeSlider* source) {
+    for (int i=0; i<this->slidersUnordered.size();i++) {
+        QRangeSlider* aSlider = this->slidersUnordered.at(i);
+        if (source!=aSlider) aSlider->deselect();
+    }
+}
+
+template <class T>
+void ParallelCoordinatesWidget<T>::qrangeSliderMinMaxValChanged(QRangeSlider* source) {
+    recalculateDrawingLines();
+    this->update();
+}
+
 
 template <class T>
 void ParallelCoordinatesWidget<T>::renderLines() {
