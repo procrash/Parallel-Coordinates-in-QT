@@ -4,23 +4,16 @@
 //#include <boost/asio.hpp>
 //#include <boost/bind.hpp>
 //#include <boost/lexical_cast.hpp>
-#include <QFileDialog>
-#include <QQuickWidget>
-#include <QSplitter>
-
 #include <iostream>
 #include <vector>
-#include <iostream>
 
 #include <iostream>
+#include <QFileDialog>
 #include <fstream>
 #include <sstream>
 #include "datastore.h"
 
 #include "parallelcoordinateswidget.h"
-#include "surfacegraph.h"
-
-
 
 using namespace std;
 
@@ -33,8 +26,6 @@ MainWindow::MainWindow(QWidget *parent) :
     delete(this->ui->parallelCoordinatesPlace);
     delete(this->ui->view3dSpace);
 
-//    QSplitter *splitter = new QSplitter(parent);
-
     parallelCoordinatesPtr = new ParallelCoordinatesWidget<WIDGET_DATA_TYPE>(this->ui->centralWidget);
     parallelCoordinatesPtr->setMinimumSize(QSize(300,300));
     this->ui->verticalLayout->addWidget(parallelCoordinatesPtr);
@@ -42,28 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
     view3dPtr = new View3D<WIDGET_DATA_TYPE>(this->ui->centralWidget);
     view3dPtr->setMinimumSize(300,300);
     this->ui->verticalLayout->addWidget(view3dPtr);
-
-
-
-
-    this->ui->quickWidget->setMinimumWidth(this->width());
-
-//    this->ui->quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
-//    this->ui->quickWidget->setSizePolicy(QSizePolicy::horizontalStretch());
-    // this->ui->quickWidget->
-    this->ui->quickWidget->setSource(QUrl("qrc:qml/Form.ui.qml"));
-
-
-    Q3DSurface *graph = new Q3DSurface();
-
-    QWidget *container = QWidget::createWindowContainer(graph);
-
-    SurfaceGraph* surfaceGraph = new SurfaceGraph(graph);
-    container->setMinimumWidth(300);
-    container->setMinimumHeight(100);
-    this->ui->verticalLayout->addWidget(container);
-
-    surfaceGraph->enableSqrtSinModel(true);
 
     /*
     connect(ui->xSlider, SIGNAL(valueChanged(int)), ui->openGLWidget, SLOT(setXRotation(int)));
@@ -103,12 +72,6 @@ void MainWindow::on_actionOpen_triggered()
 
 }
 
-void MainWindow::resizeEvent(QResizeEvent* event){
-     QMainWindow::resizeEvent(event);
-
-     // if (this->parallelCoordinatesPtr!=NULL) this->parallelCoordinatesPtr->recalculateDrawingLines();
-}
-
 void MainWindow::on_actionCalc_triggered()
 {
     this->parallelCoordinatesPtr->recalculateDrawingLines();
@@ -127,8 +90,7 @@ void MainWindow::loadFileData(QString fileName) {
         ifstream is;
         is.open(fileName.toStdString(), ios::binary);
 
-        this->dataStore.clearData();
-//        this->parallelCoordinatesPtr->clearDataSet();
+        this->parallelCoordinatesPtr->clearDataSet();
 
         std::string line;
 
@@ -169,6 +131,7 @@ void MainWindow::on_actionLoad_Data_from_File_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"",tr("Files (*.*)"));
     // fileName = "/Users/wolfgangmeyerle/Downloads/of_v0.9.3_osx_release/apps/myApps/Salsa20/bin/Salsa20Debug.app/Contents/Resources/petyaData.dat";
     loadFileData(fileName);
+    this->parallelCoordinatesPtr->recalculateDrawingLines();
     update();
 }
 
@@ -177,6 +140,8 @@ void MainWindow::on_actionLoad_Default_Data_triggered()
 {
     QString fileName = "/Users/wolfgangmeyerle/Downloads/of_v0.9.3_osx_release/apps/myApps/Salsa20/bin/Salsa20Debug.app/Contents/Resources/petyaData.dat";
     loadFileData(fileName);
+    this->parallelCoordinatesPtr->recalculateDrawingLines();
+
     update();
 }
 
@@ -185,7 +150,6 @@ void MainWindow::on_actionGenerate_Random_Data_triggered()
     dataStore.generateRandomDataSet(20);
     this->parallelCoordinatesPtr->setDataStorePtr(&dataStore);
     this->view3dPtr->setDataStorePtr(&dataStore);
-
     this->parallelCoordinatesPtr->setMinMaxGUI();
     this->parallelCoordinatesPtr->recalculateDrawingLines();
 
@@ -196,10 +160,4 @@ void MainWindow::on_actionDraw_data_out_of_range_changed()
 {
     bool drawNotInRange = this->ui->actionDraw_data_out_of_range->isChecked();
     this->parallelCoordinatesPtr->setDrawNotInRange(drawNotInRange);
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    this->view3dPtr->setWindowFlags(Qt::Window);
-    this->view3dPtr->showFullScreen();
 }
