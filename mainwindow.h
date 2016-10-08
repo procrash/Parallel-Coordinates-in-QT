@@ -50,6 +50,10 @@ private slots:
 
     void on_actionDraw_data_out_of_range_changed();
 
+    void on_pushButton_clicked();
+
+protected:
+    void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
 private:
     Ui::MainWindow *ui;
     DataStore<WIDGET_DATA_TYPE> dataStore;

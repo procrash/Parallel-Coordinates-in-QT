@@ -7,34 +7,115 @@
 // #include <boost/lexical_cast.hpp>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
+
+#include <QObject>
 
 using namespace std;
+
+
 
 QRangeSlider::QRangeSlider(QWidget *parent)
 {
     this->setMouseTracking(true);
     this->setMinimumWidth(100);
 
+    this->textBoxWidthTopAndBottom = 60;
+    this->textBoxHeightTopAndBottom = 20;
+
+    // Position Textboxes Top and Bottom
+    lineEditTop.setParent(this);
+    lineEditTop.setMaximumWidth(textBoxWidthTopAndBottom);
+    lineEditTop.setMinimumWidth(textBoxWidthTopAndBottom);
+    lineEditTop.setAlignment(Qt::AlignCenter);
+
+
+    lineEditBottom.setParent(this);
+    lineEditBottom.setMaximumWidth(textBoxWidthTopAndBottom);
+    lineEditBottom.setMinimumWidth(textBoxWidthTopAndBottom);
+    lineEditBottom.setAlignment(Qt::AlignCenter);
+
+
+    lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
+    lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
+
+    //Always last action, otherwise TextBoxes seem to be visible
+    lineEditTop.setVisible(false);
+    lineEditBottom.setVisible(false);
+
 }
 
+void QRangeSlider::registerQRangeSliderObserver(QRangeSliderObserver* observer){
+    if (std::find(observers.begin(), observers.end(), observer)==observers.end()) {
+        observers.push_back(observer);
+    }
+}
+
+void QRangeSlider::unregisterQRangeSliderObserver(QRangeSliderObserver* observer){
+    if (std::find(observers.begin(), observers.end(), observer)!=observers.end()) {
+        observers.erase(remove(observers.begin(), observers.end(), observer), observers.end());
+    }
+}
+
+void QRangeSlider::deselect() {
+    unsetHighlights();
+    hideTextboxesIfNecessary();
+    update();
+}
+
+void QRangeSlider::resizeEvent(QResizeEvent * event) {
+    xPositionSliderBar = 15+20;
+
+    textBoxLocationTopX = (xPositionSliderBar)-50/2;
+    textBoxLocationTopY = 5;
+
+    textBoxLocationBottomX = (xPositionSliderBar)-50/2;
+    int height = this->size().height();
+    // height=200;
+    textBoxLocationBottomY = height-20;
+
+    lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
+    lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
+
+    grabHandleYPositionTop    = this->slideBarStartY;
+    grabHandleYPositionBottom = this->slideBarStartY;
+
+    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
+
+}
 
 WIDGET_DATA_TYPE QRangeSlider::getCurrentSetMinVal() {
-    return this->currentSetMinVal;
+    if (this->currentSetBottomVal<=this->currentSetTopVal)
+        return this->currentSetBottomVal;
+    else
+        return this->currentSetTopVal;
 }
 
 WIDGET_DATA_TYPE QRangeSlider::getCurrentSetMaxVal() {
-    return this->currentSetMaxVal;
+    if (this->currentSetBottomVal>=this->currentSetTopVal)
+        return this->currentSetBottomVal;
+    else
+        return this->currentSetTopVal;
 }
 
 void QRangeSlider::setMinVal(WIDGET_DATA_TYPE val) {
     this->minVal = val;
-    this->currentSetMinVal = val;
+
+
+    this->currentSetTopVal = val;
+
+    grabHandleYPositionTop    = this->getYPositionForVal(this->currentSetTopVal)-circleRadius;
+    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
 
 }
 
 void QRangeSlider::setMaxVal(WIDGET_DATA_TYPE val) {
     this->maxVal = val;
-    this->currentSetMaxVal = val;
+    this->currentSetBottomVal = val;
+
+    grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
+    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
 }
 
 double QRangeSlider::getXPositionBar() {
@@ -50,17 +131,22 @@ double QRangeSlider::getCircleRadius() {
 }
 
 
-uint64_t QRangeSlider::getYPositionForVal(WIDGET_DATA_TYPE val) {
+
+uint64_t QRangeSlider::getYPositionForVal(WIDGET_DATA_TYPE val, bool dontFlip) {
 
     WIDGET_DATA_TYPE range = (maxVal>minVal)? (maxVal - minVal) : minVal-maxVal;
 
     uint64_t retVal = this->slideBarStartY +circleRadius;
 
     if (range!=0) {
-        // uint64_t ret1 = (val-minVal)/range * (WIDGET_DATA_TYPE)this->slideBarHeight;
         uint64_t ret2 = ((WIDGET_DATA_TYPE)(this->slideBarHeight))*(val-minVal)/range;
 
-        retVal += ret2;
+        if (minValDisplayedOnTop || dontFlip) {
+            retVal += ret2;
+        }
+        else {
+            retVal += slideBarHeight-ret2;
+        }
 
 
     }
@@ -73,14 +159,58 @@ uint64_t QRangeSlider::getYPositionForVal(WIDGET_DATA_TYPE val) {
     return retVal;
 }
 
+
 void QRangeSlider::paintEvent(QPaintEvent *) {
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    paintSlider(&painter, this->xPositionSliderBar,0,10,this->size().height()-40, this->minVal, this->maxVal);
+    paintSlider(&painter, this->xPositionSliderBar,slideBarStartY,this->sliderWidth,this->size().height()-55-30, this->minVal, this->maxVal);
 
 }
+
+void QRangeSlider::paintSlider(QPainter* painter, int x, int y , int width, int height, int rangeStart, int rangeEnd) {
+
+    WIDGET_DATA_TYPE topVal;
+    WIDGET_DATA_TYPE bottomVal;
+
+    if (this->minValDisplayedOnTop) {
+         topVal = this->currentSetTopVal;
+         bottomVal = this->currentSetBottomVal;
+    } else {
+        topVal = this->currentSetBottomVal;
+        bottomVal = this->currentSetTopVal;
+    }
+
+    paintTextBoxWithValue(painter, textBoxLocationTopX,   textBoxLocationTopY,    textBoxWidthTopAndBottom, textBoxHeightTopAndBottom, topVal, 2, this->hightlightTopTextBox);
+    paintTextBoxWithValue(painter, textBoxLocationBottomX,textBoxLocationBottomY, textBoxWidthTopAndBottom, textBoxHeightTopAndBottom, bottomVal, 2, this->hightlightBottomTextBox);
+
+    slideBarHeight = height;
+
+    // Draw unfilled slide area
+    drawSlideBar(painter, x, y, width, height,QColor("#BBBBBB"), QColor("#D0D0D0"),QColor("#E1E1E1"));
+
+
+
+    // draw filled blueish slide area
+    drawSlideBar(painter, x, grabHandleYPositionTop, width, grabHandleYPositionBottom-grabHandleYPositionTop,QColor("#BBBBBB"), QColor("#5C96C5"),QColor("#76ABD3"));
+
+    // Draw Circles for Min Value
+
+    drawGrabHandle(painter, x+width/2, grabHandleYPositionTop, circleRadius, this->hightlightTopGrabHandle);
+    // Draw Circle for Max Value
+    drawGrabHandle(painter, x+width/2, grabHandleYPositionBottom, circleRadius, hightlightBottomGrabHandle);
+
+
+    /*
+    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+    effect->setBlurRadius(5);
+    this->setGraphicsEffect(effect);
+    */
+
+
+}
+
 
 void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
 
@@ -92,13 +222,9 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
     this->hightlightTopGrabHandle = hitTestTopGrabHandle(mouseX, mouseY);
     this->hightlightBottomGrabHandle = hitTestBottomGrabHandle(mouseX, mouseY);
 
-    this->hightlightTopTextBox = hitTestTopTextBox(mouseX, mouseY);
-    this->hightlightBottomTextBox = hitTestBottomTextBox(mouseX, mouseY);
-
-
     double newVal = 0;
 
-    if (minValGrab || maxValGrab) {
+    if (topValGrab || bottomValGrab) {
         // Calculate the new minimum value
 
         int y = event->pos().y()-this->slideBarStartY;
@@ -107,49 +233,69 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
         if (y>this->slideBarHeight) y= this->slideBarHeight;
         if (y<0) y=0;
 
-        newVal = (double)y*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
-
-    }
-
-
-    if (minValGrab || maxValGrab) {        
-
-        cout << "Top value is " << this->currentSetMaxVal << " Bottom Value is " << this->currentSetMaxVal << " " << newVal << endl;
-
-        if (newVal <= this->currentSetMinVal) {
-            this->minValGrab = true;
-            this->maxValGrab = false;
-        } else
-        if (newVal >this->currentSetMaxVal) {
-            this->maxValGrab = true;
-            this->minValGrab = false;
-        }
-
-        if (minValGrab) {
-            // Calculate the new minimum value
-            this->currentSetMinVal = newVal;
-        }
+        if (abs( grabHandleYPositionTop-(y+slideBarStartY)) <
+            abs(grabHandleYPositionBottom-(y+slideBarStartY))
+           )
+            grabHandleYPositionTop    = y+slideBarStartY;
         else
-        if (maxValGrab) {
-            // Calculate the new maximum value
-            this->currentSetMaxVal = newVal;
+            grabHandleYPositionBottom = y+slideBarStartY;
+
+        centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+        centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
+
+        double newValTop    = (double)(grabHandleYPositionTop-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+        double newValBottom = (double)(grabHandleYPositionBottom-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+
+        if (this->minValDisplayedOnTop) {
+            this->currentSetTopVal = newValTop;
+            this->currentSetBottomVal = newValBottom;
+        } else {
+            this->currentSetTopVal = newValBottom;
+            this->currentSetBottomVal = newValTop;
         }
 
+
+        // The following code has been amended to snap in to specific values...
+        // Commented out as it is causing problems when distances from position y to min and max are equal
+        /*
+        grabHandleYPositionTop = this->getYPositionForVal(this->currentSetTopVal)-circleRadius;
+        grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
+        */
+
+        // informObserversMinMaxValChanged();
 
         this->repaint();
     }
 
 }
 
-bool QRangeSlider::hitTestTopGrabHandle(int x, int y) {
+bool QRangeSlider::hitTestOnSliderBar(int x, int y) {
 
-    int circleCenterMinValX = (int) this->centerMinVal.x();
-    int circleCenterMinValY = (int) this->centerMinVal.y();
+    int circleCenterMinValX = (int) this->centerTopVal.x();
+    int circleCenterMinValY = (int) this->centerTopVal.y();
+
+
+    /*
+    (x,y+width/2);
+    (x, y+height-width/2);
+    */
 
     if (x>=circleCenterMinValX-this->circleRadius/2 &&
-        x<=circleCenterMinValX+this->circleRadius/2 &&
-        y>=circleCenterMinValY-this->circleRadius/2 &&
-        y<=circleCenterMinValY+this->circleRadius/2) {
+        x<=circleCenterMinValX+this->circleRadius/2) {
+        return true;
+    }
+    return false;
+}
+
+bool QRangeSlider::hitTestTopGrabHandle(int x, int y) {
+
+    int circleCenterTopValX = (int) this->centerTopVal.x();
+    int circleCenterTopValY = (int) this->centerTopVal.y();
+
+    if (x>=circleCenterTopValX-this->circleRadius/2 &&
+        x<=circleCenterTopValX+this->circleRadius/2 &&
+        y>=circleCenterTopValY-this->circleRadius/2 &&
+        y<=circleCenterTopValY+this->circleRadius/2) {
         return true;
     }
 
@@ -158,15 +304,13 @@ bool QRangeSlider::hitTestTopGrabHandle(int x, int y) {
 
 bool QRangeSlider::hitTestBottomGrabHandle(int x, int y) {
 
+    int circleCenterBottomValX = (int) this->centerBottomVal.x();
+    int circleCenterBottomValY = (int) this->centerBottomVal.y();
 
-
-    int circleCenterMaxValX = (int) this->centerMaxVal.x();
-    int circleCenterMaxValY = (int) this->centerMaxVal.y();
-
-    if (x>=circleCenterMaxValX-this->circleRadius/2 &&
-        x<=circleCenterMaxValX+this->circleRadius/2 &&
-        y>=circleCenterMaxValY-this->circleRadius/2 &&
-        y<=circleCenterMaxValY+this->circleRadius/2) {
+    if (x>=circleCenterBottomValX-this->circleRadius/2 &&
+        x<=circleCenterBottomValX+this->circleRadius/2 &&
+        y>=circleCenterBottomValY-this->circleRadius/2 &&
+        y<=circleCenterBottomValY+this->circleRadius/2) {
         return true;
     }
     return false;
@@ -192,40 +336,133 @@ bool QRangeSlider::hitTestBottomTextBox(int x, int y) {
     return false;
 }
 
+void QRangeSlider::informObserversTextBoxFocused() {
+    for (vector<QRangeSliderObserver*>::iterator it=observers.begin(); it!=observers.end(); ++it) {
+        (*it)->qrangeSliderTextboxFocused(this);
+    }
+}
+
+void QRangeSlider::informObserversMinMaxValChanged() {
+    for (vector<QRangeSliderObserver*>::iterator it=observers.begin(); it!=observers.end(); ++it) {
+        (*it)->qrangeSliderMinMaxValChanged(this);
+    }
+}
 
 void QRangeSlider::mousePressEvent(QMouseEvent *event) {
     if (event->buttons() == Qt::LeftButton) {
         mousePressed = true;
 
+//        deselectNeighbours();
+        informObserversTextBoxFocused();
 
         // Check if handles are in range...
         int x = event->x();
         int y = event->y();
 
+        if (!hitTestTopTextBox(x,y)) {
+            lineEditTop.setVisible(false);
+        }
+
+        if (!hitTestBottomTextBox(x,y)) {
+            lineEditBottom.setVisible(false);
+        }
+
 
         if (hitTestTopGrabHandle(x,y)) {
             // Mouse is situated in minVal grab handle
-            minValGrab = true;
-            maxValGrab = false;
+                topValGrab = true;
+                bottomValGrab = false;
         } else if (hitTestBottomGrabHandle(x,y)){
             // Mouse is situated in maxVal grab handle
-            maxValGrab = true;
-            minValGrab = false;
+                bottomValGrab = true;
+                topValGrab = false;
         } else {
-            minValGrab = false;
-            maxValGrab = false;
+            topValGrab = false;
+            bottomValGrab = false;
         }
+    }
+}
+
+
+void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
+    if (event->buttons() == Qt::LeftButton) {
+        int x = event->x();
+        int y = event->y();
+
+
+        if (hitTestTopTextBox(x,y)) {
+
+            cout << "Double click top" << endl;
+
+            lineEditTop.setVisible(true);
+            lineEditTop.setFocus();
+
+            informObserversTextBoxFocused();
+
+
+            //deselectNeighbours();
+
+        } else
+            if (hitTestBottomTextBox(x,y)) {
+
+                cout << "Double click bottom" << endl;
+
+                lineEditBottom.setVisible(true);
+                lineEditBottom.setFocus();
+
+
+                informObserversTextBoxFocused();
+
+                // deselectNeighbours();
+            } else {
+                if (hitTestOnSliderBar(x,y)) {
+                    minValDisplayedOnTop = !minValDisplayedOnTop;
+
+
+                    int tmp = grabHandleYPositionTop;
+                    grabHandleYPositionTop = this->height() - grabHandleYPositionBottom;
+                    grabHandleYPositionBottom = this->height() - tmp;
+
+                    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+                    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
+
+
+
+                    this->update();
+
+
+                    /*
+                    WIDGET_DATA_TYPE tmp =  this->currentSetTopVal;
+                    this->currentSetTopVal = this->currentSetBottomVal;
+                    this->currentSetBottomVal = tmp;
+
+                    tmp = minVal;
+                    minVal = maxVal;
+                    maxVal = tmp;
+                    */
+
+                    informObserversMinMaxValChanged();
+                }
+            }
     }
 }
 
 void QRangeSlider::mouseReleaseEvent(QMouseEvent *event) {
     mousePressed=false;
 
-    maxValGrab = false;
-    minValGrab = false;
+    bottomValGrab = false;
+    topValGrab = false;
 
     resetButtonHighlights();
+
+    informObserversMinMaxValChanged();
+
     update();
+}
+
+void QRangeSlider::hideTextboxesIfNecessary() {
+    lineEditTop.setVisible(false);
+    lineEditBottom.setVisible(false);
 }
 
 //TODO: remove
@@ -233,8 +470,8 @@ void QRangeSlider::enterEvent(QEvent * event) {
 }
 
 void QRangeSlider::leaveEvent(QEvent * event) {
-    cout << "Leaving" << endl;
     unsetHighlights();
+    // hideTextboxesIfNecessary();
     update();
 }
 
@@ -246,7 +483,7 @@ void QRangeSlider::unsetHighlights() {
 
 void QRangeSlider::resetButtonHighlights() {
     hightlightTopGrabHandle = false;
-    hightlightBottomGrabHandle = false;
+    hightlightBottomGrabHandle = false;   
 }
 
 
@@ -372,79 +609,21 @@ void QRangeSlider::drawSlideBar(QPainter* painter, int x, int y, int width, int 
     pathBackground.lineTo(x, y+height-width/2);
 
     pathBackground.arcTo(x,y+height-width, width, width, 180.0,180.0 );
-
     pathBackground.lineTo(x+width, y+width/2);
-
     pathBackground.arcTo(x,y, width, width, 0,180.0 );
 
     pathBackground.closeSubpath();
-    painter->setBrush(gradientBackground);
 
+    painter->setBrush(gradientBackground);
     painter->drawPath(pathBackground);
 
 }
 
-void QRangeSlider::paintSlider(QPainter* painter, int x, int y , int width, int height, int rangeStart, int rangeEnd) {
-
-
-    // TODO: Those values should be made global and const
-    this->textBoxLocationTopX=x-50/2;
-    this->textBoxLocationTopY=y;
-
-    this->textBoxLocationBottomX=x-50/2;
-    this->textBoxLocationBottomY=y+height-20;
-
-    this->textBoxWidthTopAndBottom = 60;
-    this->textBoxHeightTopAndBottom = 20;
-
-
-
-
-    paintTextBoxWithValue(painter, textBoxLocationTopX,   textBoxLocationTopY,    textBoxWidthTopAndBottom, textBoxHeightTopAndBottom, this->currentSetMinVal, 2, this->hightlightTopTextBox);
-    paintTextBoxWithValue(painter, textBoxLocationBottomX,textBoxLocationBottomY, textBoxWidthTopAndBottom, textBoxHeightTopAndBottom, this->currentSetMaxVal, 2, this->hightlightBottomTextBox);
-
-    y+=50;
-    height-=100;
-
-
-    slideBarStartY = y;
-    slideBarHeight = height;
-    sliderWidth = width;
-
-    // Draw unfilled slide area
-    drawSlideBar(painter, x, y, width, height,QColor("#BBBBBB"), QColor("#D0D0D0"),QColor("#E1E1E1"));
-
-
-    int grabHandleYPositionMin = this->getYPositionForVal(this->currentSetMinVal)-circleRadius;
-    int grabHandleYPositionMax = this->getYPositionForVal(this->currentSetMaxVal)-circleRadius;
-
-    // cout << grabHandleYPositionMin << " " << grabHandleYPositionMax << endl;
-
-
-    // draw filled blueish slide area    
-    drawSlideBar(painter, x, grabHandleYPositionMin, width, grabHandleYPositionMax-grabHandleYPositionMin,QColor("#BBBBBB"), QColor("#5C96C5"),QColor("#76ABD3"));
-
-
-    // Draw Circles for Min Value
-    centerMinVal=QPointF(x+width/2, grabHandleYPositionMin); // Store position for Mouse Hit Test
-    drawGrabHandle(painter, x+width/2, grabHandleYPositionMin, circleRadius, this->hightlightTopGrabHandle);
-
-    // Draw Circle for Max Value
-    centerMaxVal=QPointF(x+width/2,grabHandleYPositionMax);
-    drawGrabHandle(painter, x+width/2, grabHandleYPositionMax, circleRadius, hightlightBottomGrabHandle);
-
-
-    /*
-    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
-    effect->setBlurRadius(5);
-    this->setGraphicsEffect(effect);
-    */
-
-
-
-
-
+/*
+void QRangeSlider::textBoxFocused(QRangeSlider* me) {
 
 }
+*/
+
 
 
