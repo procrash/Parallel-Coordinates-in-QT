@@ -220,5 +220,16 @@ void View3D<T>::setDataStorePtr(DataStore<T>* dataStorePtr){
     this->dataStorePtr = dataStorePtr;
 }
 
+template<class T>
+void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
+    if(isFullScreen())
+    {
+        setWindowFlags(Qt::Widget);
+        showNormal();
+    } else {
+        setWindowFlags(Qt::Window);
+        showFullScreen();
+    }
+}
 
 

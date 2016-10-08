@@ -61,8 +61,9 @@ public:
 
         for (int y=0; y<resY; y++)
             for (int x=0; x<resX;x++) {
-                float randomNr = (float)(rand()%100);
+                float randomNr = (float)(rand()%20);
                 testData[resX+resY*resX] = randomNr;
+                cout << randomNr << endl;
             }
     }
 
@@ -77,6 +78,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
 
 signals:
     void xRotationChanged(int angle);
