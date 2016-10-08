@@ -46,7 +46,7 @@ private:
     // For testing purposes only...
     static const int resX = 100;
     static const int resY = 100;
-    float testData[resX*resY];
+    int testData[resX*resY];
 
 
 public:
@@ -61,10 +61,28 @@ public:
 
         for (int y=0; y<resY; y++)
             for (int x=0; x<resX;x++) {
-                float randomNr = (float)(rand()%20);
-                testData[resX+resY*resX] = randomNr;
-                cout << randomNr << endl;
+                testData[x+y*resX] = 0;
             }
+
+
+        for (int iteration = 0; iteration<500; iteration++)
+        for (int y=0; y<resY; y++)
+            for (int x=0; x<resX;x++) {
+                int randomNr = rand()%3;
+                switch (randomNr) {
+                    case 0: break; // Do nothing
+                    case 1: testData[x+y*resX]++; break;
+                    case 2: testData[x+y*resX]--;
+                }
+            }
+
+        /*
+        for (int y=0; y<resY; y++)
+            for (int x=0; x<resX;x++) {
+                int randomNr = rand()%200;
+                testData[x+y*resX] = randomNr;
+            }
+        */
     }
 
     void setDataStorePtr(DataStore<T>* dataStorePtr);
@@ -79,6 +97,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *keyEvent) Q_DECL_OVERRIDE;
 
 signals:
     void xRotationChanged(int angle);
