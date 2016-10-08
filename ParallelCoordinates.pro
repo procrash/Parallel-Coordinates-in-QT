@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui quickwidgets datavisualization
 QMAKE_MAC_SDK = macosx10.12
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     parallelcoordinateswidget.cpp \
     view3d.cpp \
     datastore.cpp \
-    qrangesliderobserver.cpp
+    qrangesliderobserver.cpp \
+    surfacegraph.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -27,7 +28,15 @@ HEADERS  += mainwindow.h \
     view3d.h \
     dataset.h \
     datastore.h \
-    qrangesliderobserver.h
+    qrangesliderobserver.h \
+    surfacegraph.h
 
 FORMS    += mainwindow.ui
+
+DISTFILES += \
+    Form.ui.qml \
+    ThreeDSurface.qml
+
+RESOURCES += \
+    qml.qrc
 

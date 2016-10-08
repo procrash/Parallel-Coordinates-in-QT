@@ -1,1 +1,6 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/qml">
+        <file>ThreeDSurface.qml</file>
+        <file>Form.ui.qml</file>
+    </qresource>
+</RCC>

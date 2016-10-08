@@ -202,12 +202,16 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
     // this->minMaxGUISet = false;
     // setMinMaxGUI();
 
+
+
     drawingLinesIn.clear();
     drawingLinesOut.clear();
 
     // Iterate through data and test if data is part of the users selection or not
     // if not, then paint dependecy grey, if paint dependency black
     vector<DataSet<WIDGET_DATA_TYPE>> *dataSetPtr = dataStorePtr->getDataSet();
+
+    if (dataSetPtr==NULL) return;
 
     uint64_t colorIdx = 0;
 
@@ -271,6 +275,7 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
            drawingLinesOut.push_back(entry);
         }
     }
+
 
     reduceDrawingDataSet();
 

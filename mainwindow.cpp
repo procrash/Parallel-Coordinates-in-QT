@@ -4,16 +4,23 @@
 //#include <boost/asio.hpp>
 //#include <boost/bind.hpp>
 //#include <boost/lexical_cast.hpp>
-#include <iostream>
-#include <vector>
+#include <QFileDialog>
+#include <QQuickWidget>
+#include <QSplitter>
 
 #include <iostream>
-#include <QFileDialog>
+#include <vector>
+#include <iostream>
+
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include "datastore.h"
 
 #include "parallelcoordinateswidget.h"
+#include "surfacegraph.h"
+
+
 
 using namespace std;
 
@@ -26,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
     delete(this->ui->parallelCoordinatesPlace);
     delete(this->ui->view3dSpace);
 
+//    QSplitter *splitter = new QSplitter(parent);
+
     parallelCoordinatesPtr = new ParallelCoordinatesWidget<WIDGET_DATA_TYPE>(this->ui->centralWidget);
     parallelCoordinatesPtr->setMinimumSize(QSize(300,300));
     this->ui->verticalLayout->addWidget(parallelCoordinatesPtr);
@@ -33,6 +42,25 @@ MainWindow::MainWindow(QWidget *parent) :
     view3dPtr = new View3D<WIDGET_DATA_TYPE>(this->ui->centralWidget);
     view3dPtr->setMinimumSize(300,300);
     this->ui->verticalLayout->addWidget(view3dPtr);
+
+    this->ui->quickWidget->setMinimumWidth(this->width());
+
+//    this->ui->quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+//    this->ui->quickWidget->setSizePolicy(QSizePolicy::horizontalStretch());
+    // this->ui->quickWidget->
+    this->ui->quickWidget->setSource(QUrl("qrc:qml/Form.ui.qml"));
+
+
+    Q3DSurface *graph = new Q3DSurface();
+
+    QWidget *container = QWidget::createWindowContainer(graph);
+
+    SurfaceGraph* surfaceGraph = new SurfaceGraph(graph);
+    container->setMinimumWidth(300);
+    container->setMinimumHeight(100);
+    this->ui->verticalLayout->addWidget(container);
+
+    surfaceGraph->enableSqrtSinModel(true);
 
     /*
     connect(ui->xSlider, SIGNAL(valueChanged(int)), ui->openGLWidget, SLOT(setXRotation(int)));
@@ -70,6 +98,12 @@ void MainWindow::on_actionOpen_triggered()
 
 
 
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event){
+     QMainWindow::resizeEvent(event);
+
+     // if (this->parallelCoordinatesPtr!=NULL) this->parallelCoordinatesPtr->recalculateDrawingLines();
 }
 
 void MainWindow::on_actionCalc_triggered()

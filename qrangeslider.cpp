@@ -470,7 +470,6 @@ void QRangeSlider::enterEvent(QEvent * event) {
 }
 
 void QRangeSlider::leaveEvent(QEvent * event) {
-    cout << "Leaving" << endl;
     unsetHighlights();
     // hideTextboxesIfNecessary();
     update();
