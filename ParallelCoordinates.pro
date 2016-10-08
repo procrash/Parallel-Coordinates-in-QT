@@ -18,8 +18,7 @@ SOURCES += main.cpp\
     parallelcoordinateswidget.cpp \
     view3d.cpp \
     datastore.cpp \
-    qrangesliderobserver.cpp \
-    surfacegraph.cpp
+    qrangesliderobserver.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -28,8 +27,7 @@ HEADERS  += mainwindow.h \
     view3d.h \
     dataset.h \
     datastore.h \
-    qrangesliderobserver.h \
-    surfacegraph.h
+    qrangesliderobserver.h
 
 FORMS    += mainwindow.ui
 

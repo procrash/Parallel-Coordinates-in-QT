@@ -51,17 +51,31 @@ template<class T>
 void View3D<T>::paintGL()
 {
 
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(minX-distance, maxX+distance, minY-distance, maxY+distance, minZ+distance, maxZ-distance);
+
+//    glOrtho(minX, maxX, minY, maxY, minZ, maxZ);
+    glMatrixMode(GL_MODELVIEW);
+
+
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+
+    //glEnable ( GL_LIGHTING ) ;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(500, 500, -1+distance);
+
+
+
+    glTranslatef(500, 500, -1);
 
     glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
     glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
 
-    glTranslatef(-500, -500, -1+distance);
+    glTranslatef(-500, -500, -1);
 
 
     //glLoadIdentity();
@@ -82,9 +96,11 @@ void View3D<T>::paintGL()
     for (int y = 0; y<nrPointsY-1; y++) {
       glBegin(GL_TRIANGLE_STRIP);
       for (int x = 0; x<nrPointsX; x++) {
-        float z1 = testData[y*resY+x];
-        float z2 = testData[(y+1)*resY+x];
+        int z1 = testData[y*nrPointsX+x];
+        int z2 = testData[(y+1)*nrPointsX+x];
 
+        //cout << z1 << endl;
+        //cout << z2 << endl;
         glVertex3f(x*xDist,  y*yDist, z1);
         glVertex3f(x*xDist,  (y+1)*yDist, z2);
       }
@@ -141,8 +157,11 @@ void View3D<T>::resizeGL(int width, int height)
     int side = qMin(width, height);
     glViewport((width - side) / 2, (height - side) / 2, side, side);
 
+    cout << "MaxZ: " << maxZ << endl;
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+
     glOrtho(minX, maxX, minY, maxY, minZ, maxZ);
     glMatrixMode(GL_MODELVIEW);
 
@@ -232,4 +251,15 @@ void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
     }
 }
 
+
+template<class T>
+void View3D<T>::keyPressEvent(QKeyEvent *keyEvent) {
+    if (keyEvent->key() == Qt::Key_Escape) {
+        if(isFullScreen())
+        {
+            setWindowFlags(Qt::Widget);
+            showNormal();
+        }
+    }
+}
 
