@@ -43,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     view3dPtr->setMinimumSize(300,300);
     this->ui->verticalLayout->addWidget(view3dPtr);
 
+
+
+
     this->ui->quickWidget->setMinimumWidth(this->width());
 
 //    this->ui->quickWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
@@ -193,4 +196,10 @@ void MainWindow::on_actionDraw_data_out_of_range_changed()
 {
     bool drawNotInRange = this->ui->actionDraw_data_out_of_range->isChecked();
     this->parallelCoordinatesPtr->setDrawNotInRange(drawNotInRange);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    this->view3dPtr->setWindowFlags(Qt::Window);
+    this->view3dPtr->showFullScreen();
 }
