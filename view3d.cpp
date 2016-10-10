@@ -29,18 +29,38 @@ QSize View3D<T>::sizeHint() const
 template<class T>
 void View3D<T>::initializeGL()
 {
-
     glClearColor(0,0,0,255);
 
-
     glEnable(GL_DEPTH_TEST);
-   // glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
-    // glEnable(GL_LIGHTING);
-    // glEnable(GL_LIGHT0);
     glEnable(GL_MULTISAMPLE);
 
 
+    m_program = new QOpenGLShaderProgram(this);
+
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertexShader.glsl");
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragmentShader.glsl");
+
+    m_program->link();
+    m_posAttr = m_program->attributeLocation("posAttr");
+
+
+    /*
+    // Create data
+    m_vbo.create();
+    m_vbo.bind();
+    m_vao.create();
+    m_vao.bind();
+    */
+
+
+
+    //m_vao.release();
+    //m_vbo.release();
+
+
+
+//
     /*
     static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -50,6 +70,43 @@ void View3D<T>::initializeGL()
 template<class T>
 void View3D<T>::paintGL()
 {
+   // glViewport(0,0, this->width(), this->height());
+
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+     m_program->bind();
+
+
+     GLfloat vertices[] = {
+        +0.0f, +1.0f, 0.0f,
+        -1.0f, -1.0f,   0.0f,
+        +1.0f, -1.0f,   0.0f
+     };
+
+
+
+     glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+     glEnableVertexAttribArray(0);
+
+
+     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+     m_program->release();
+
+
+//     glDisableVertexAttribArray(0);
+
+
+
+}
+
+/*
+template<class T>
+void View3D<T>::paintGL()
+{
+
+
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -107,7 +164,7 @@ void View3D<T>::paintGL()
       glEnd();
     }
 
-        /*
+
         int i = 0;
         for (int x = 0; x<100; x++) {
             for (int z=0; z<100; z++) {
@@ -132,24 +189,25 @@ void View3D<T>::paintGL()
 
             }
         }
-        */
+
        //  glEnd();
         //}
 
-    /*
-    if (this->dataSetPtr!=NULL) {
-        glPointSize(3.0f);
-        glBegin(GL_POINTS);
-        for (uint64_t i=0; i<dataSetPtr->size(); i++) {
-            for (int j=0; j<nrOfDimensions; j++) {
-                glVertex3f(i*xDist, j*yDist, 0 /dataSetPtr->at(i).dimVal[j] / );
-            }
-        }
-        glEnd();
-    }
-    */
+
+    // if (this->dataSetPtr!=NULL) {
+    //    glPointSize(3.0f);
+    //    glBegin(GL_POINTS);
+    //    for (uint64_t i=0; i<dataSetPtr->size(); i++) {
+    //        for (int j=0; j<nrOfDimensions; j++) {
+    //            glVertex3f(i*xDist, j*yDist, 0 /dataSetPtr->at(i).dimVal[j] / );
+    //        }
+    //    }
+    //    glEnd();
+    // }
+
 
 }
+*/
 
 template<class T>
 void View3D<T>::resizeGL(int width, int height)

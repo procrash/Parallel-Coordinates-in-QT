@@ -10,6 +10,9 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
 
 using namespace std;
 
@@ -18,6 +21,11 @@ class View3D : public QOpenGLWidget
 {
 
 private:
+
+    GLuint m_posAttr;
+    QOpenGLShaderProgram *m_program;
+    QOpenGLVertexArrayObject m_vao;
+    QOpenGLBuffer m_vbo;
 
     int minX = 0;
     int maxX = 1000;
