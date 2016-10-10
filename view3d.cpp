@@ -72,16 +72,41 @@ void View3D<T>::initializeData()
     }
     m_vaoPtr = new QOpenGLVertexArrayObject();
 
+    if (verticesPtr!=NULL) {
+        free(verticesPtr);
+    }
+
+
+
+
+    srand (time(NULL));
+    verticesPtr = (GLfloat*) malloc(nrOfPoints*3*sizeof(GLfloat));
+
+
     GLfloat vertices[] = {
-       +0.0f, +1.0f, 0.0f,
-       -1.0f, -1.0f,   0.0f,
-       +1.0f, -1.0f,   0.0f
+          +0.0f, +1.0f, 0.0f,
+          -1.0f, -1.0f,   0.0f,
+          +1.0f, -1.0f,   0.0f
+       };
+
+    memcpy(verticesPtr, vertices, sizeof(vertices));
+
+    /*
+    int idx = 0;
+    for (int y=0; y<500; y++)
+    for (int x=0; x<500; x++) {
+        verticesPtr[idx]   =((GLfloat) x)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx+1] =((GLfloat) y)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx+2] =0; // 1/((rand()%1000)+1);
+        idx+=3;
     };
+    */
+
 
     m_vboPtr->create();
     m_vboPtr->bind();
     m_vboPtr->setUsagePattern(QOpenGLBuffer::StaticDraw);
-    m_vboPtr->allocate(vertices, sizeof(vertices));
+    m_vboPtr->allocate(verticesPtr, nrOfPoints*3*sizeof(GL_FLOAT));
 
     m_vaoPtr->create();
     m_vaoPtr->bind();
@@ -100,14 +125,26 @@ void View3D<T>::paintGL()
         initializeData();
     }
 
+
+
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     m_vaoPtr->bind();
     m_program->bind();
 
 
+    QMatrix4x4 matrix;
+    matrix.perspective(60.0f, 1.0f, 0.1f, 100.0f);
+    matrix.translate(0, 0, -2);
+    m_program->setUniformValue(m_matrixUniform, matrix);
+
+    // glPointSize(10.0f);
+    //glDrawArrays(GL_POINT, 0, nrOfPoints);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawArrays(GL_LINES, 0,3);
 
 
     m_program->release();
