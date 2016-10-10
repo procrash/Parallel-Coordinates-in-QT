@@ -22,10 +22,12 @@ class View3D : public QOpenGLWidget
 
 private:
 
+    bool switchedToFullscreen;
+
     GLuint m_posAttr;
     QOpenGLShaderProgram *m_program;
-    QOpenGLVertexArrayObject m_vao;
-    QOpenGLBuffer m_vbo;
+    QOpenGLVertexArrayObject *m_vaoPtr;
+    QOpenGLBuffer *m_vboPtr;
 
     int minX = 0;
     int maxX = 1000;
@@ -51,15 +53,20 @@ private:
     void setYRotation(int angle);
     void setZRotation(int angle);
 
+
+
+    void initializeData();
+
     // For testing purposes only...
     static const int resX = 100;
     static const int resY = 100;
     int testData[resX*resY];
 
 
+
 public:
     View3D(QWidget *parent)
-           : QOpenGLWidget(parent) {
+           : QOpenGLWidget(parent), switchedToFullscreen(false), m_vaoPtr(NULL), m_vboPtr(NULL) {
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
