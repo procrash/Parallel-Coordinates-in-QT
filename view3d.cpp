@@ -77,8 +77,6 @@ void View3D<T>::initializeData()
     }
 
 
-
-
     srand (time(NULL));
     verticesPtr = (GLfloat*) malloc(nrOfPoints*3*sizeof(GLfloat));
 
@@ -91,12 +89,13 @@ void View3D<T>::initializeData()
 
     memcpy(verticesPtr, vertices, sizeof(vertices));
 
+
     /*
     int idx = 0;
     for (int y=0; y<500; y++)
     for (int x=0; x<500; x++) {
-        verticesPtr[idx]   =((GLfloat) x)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
-        verticesPtr[idx+1] =((GLfloat) y)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx]   =((GLfloat) x)/(GLfloat)50.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx+1] =((GLfloat) y)/(GLfloat)50.0f; // 1/((rand()%1000)+1);
         verticesPtr[idx+2] =0; // 1/((rand()%1000)+1);
         idx+=3;
     };
@@ -126,8 +125,6 @@ void View3D<T>::paintGL()
     }
 
 
-
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -137,7 +134,12 @@ void View3D<T>::paintGL()
 
     QMatrix4x4 matrix;
     matrix.perspective(60.0f, 1.0f, 0.1f, 100.0f);
-    matrix.translate(0, 0, -2);
+    matrix.translate(0, 0, -2+distance/20);
+
+    matrix.rotate(xRot / 16.0, 1.0, 0.0, 0.0);
+    matrix.rotate(yRot / 16.0, 0.0, 1.0, 0.0);
+    matrix.rotate(zRot / 16.0, 0.0, 0.0, 1.0);
+
     m_program->setUniformValue(m_matrixUniform, matrix);
 
     // glPointSize(10.0f);
