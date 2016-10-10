@@ -29,6 +29,8 @@ QSize View3D<T>::sizeHint() const
 template<class T>
 void View3D<T>::initializeGL()
 {
+
+
     glClearColor(0,0,0,255);
 
     glEnable(GL_DEPTH_TEST);
@@ -45,58 +47,74 @@ void View3D<T>::initializeGL()
     m_posAttr = m_program->attributeLocation("posAttr");
 
 
-    /*
-    // Create data
-    m_vbo.create();
-    m_vbo.bind();
-    m_vao.create();
-    m_vao.bind();
-    */
+    initializeData();
+
+   // m_program->release();
+
+//    glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
 
 
 
-    //m_vao.release();
-    //m_vbo.release();
+}
 
+template<class T>
+void View3D<T>::initializeData()
+{
+    if (m_vboPtr!=NULL) {
+        m_vboPtr->destroy();
+        delete(m_vboPtr);
+    }
+    m_vboPtr = new QOpenGLBuffer();
 
+    if (m_vaoPtr!=NULL) {
+        m_vaoPtr->destroy();
+        delete(m_vaoPtr);
+    }
+    m_vaoPtr = new QOpenGLVertexArrayObject();
 
-//
-    /*
-    static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-*/
+    GLfloat vertices[] = {
+       +0.0f, +1.0f, 0.0f,
+       -1.0f, -1.0f,   0.0f,
+       +1.0f, -1.0f,   0.0f
+    };
+
+    m_vboPtr->create();
+    m_vboPtr->bind();
+    m_vboPtr->setUsagePattern(QOpenGLBuffer::StaticDraw);
+    m_vboPtr->allocate(vertices, sizeof(vertices));
+
+    m_vaoPtr->create();
+    m_vaoPtr->bind();
+    glEnableVertexAttribArray(0);
+    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
+
+    m_vboPtr->release();
+    m_vaoPtr->release();
 }
 
 template<class T>
 void View3D<T>::paintGL()
 {
-   // glViewport(0,0, this->width(), this->height());
 
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (switchedToFullscreen) {
+        initializeData();
+    }
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-     m_program->bind();
-
-
-     GLfloat vertices[] = {
-        +0.0f, +1.0f, 0.0f,
-        -1.0f, -1.0f,   0.0f,
-        +1.0f, -1.0f,   0.0f
-     };
+    m_vaoPtr->bind();
+    m_program->bind();
 
 
 
-     glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-     glEnableVertexAttribArray(0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
 
-     glDrawArrays(GL_TRIANGLES, 0, 3);
+    m_program->release();
+    m_vaoPtr->release();
 
-     m_program->release();
-
-
-//     glDisableVertexAttribArray(0);
-
+    //m_vao.destroy();
+    //m_vbo.destroy();
 
 
 }
@@ -303,8 +321,10 @@ void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
     {
         setWindowFlags(Qt::Widget);
         showNormal();
+
     } else {
         setWindowFlags(Qt::Window);
+        switchedToFullscreen = true;
         showFullScreen();
     }
 }
