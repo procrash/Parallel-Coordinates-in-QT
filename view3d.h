@@ -22,9 +22,15 @@ class View3D : public QOpenGLWidget
 
 private:
 
+    const int nrOfPoints = 500*500;
+
+    GLfloat* verticesPtr;
+
     bool switchedToFullscreen;
 
     GLuint m_posAttr;
+    GLuint m_matrixUniform;
+
     QOpenGLShaderProgram *m_program;
     QOpenGLVertexArrayObject *m_vaoPtr;
     QOpenGLBuffer *m_vboPtr;
