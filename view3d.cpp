@@ -127,11 +127,9 @@ void View3D<T>::initializeData()
     memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
-
-
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, 1*sizeof(GL_FLOAT), verticesPtr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GL_FLOAT), verticesPtr, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
