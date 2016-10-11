@@ -5,7 +5,6 @@
 //#include <boost/bind.hpp>
 //#include <boost/lexical_cast.hpp>
 #include <QFileDialog>
-#include <QQuickWidget>
 #include <QSplitter>
 
 #include <iostream>
@@ -28,9 +27,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
-
-
-
     ui->setupUi(this);
 
     delete(this->ui->parallelCoordinatesPlace);
@@ -44,9 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :
     parallelCoordinatesPtr->resize(QSize(300,300));
 
     splitter->addWidget(parallelCoordinatesPtr);
-
-
-
 
 //    this->ui->verticalLayout->addWidget(parallelCoordinatesPtr);
 

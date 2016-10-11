@@ -68,11 +68,12 @@ void View3D<T>::initializeData()
     const size_t space = nrOfPoints*3*2*3*2*sizeof(GLfloat);
 
     verticesPtr = (GLfloat*) malloc(space);
-
+    memset(verticesPtr, 0, space);
 
     const int xDist = 5;
     const int yDist = 5;
 
+    /*
     int idx = 0;
     for (int y=0; y<500; y++)
     for (int x=0; x<500; x++) {
@@ -99,17 +100,49 @@ void View3D<T>::initializeData()
         idx+=12;
     };
 
+    */
+
+
+    verticesPtr[0] = 0.0f;
+    verticesPtr[1] = 1.0f;
+    verticesPtr[2] = 0.0f;
+    verticesPtr[3] = -1.0f;
+    verticesPtr[4] = -1.0f;
+    verticesPtr[5] = 0.0f;
+    verticesPtr[6] = 1.0f;
+    verticesPtr[7] = -1.0f;
+    verticesPtr[8] = 0.0f;
+
+    /*
+    GLfloat vertices[] = {
+              +0.0f, +1.0f,   0.0f,
+              -1.0f, -1.0f,   0.0f,
+              +1.0f, -1.0f,   0.0f
+           };
+
+
+    cout << sizeof(vertices) << endl;
+    memcpy(verticesPtr, vertices, sizeof(vertices));
+    */
+
+    // glGenVertexArrays(1, &vertexArrayId);
+    // glBindVertexArray(vertexArrayId);
+
 
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, space, verticesPtr, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6, 0);
+    glBufferData(GL_ARRAY_BUFFER, 1*sizeof(GL_FLOAT), verticesPtr, GL_STATIC_DRAW);
 
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 0, 0);
+
+    /*
     GLushort indices[] = { 0, 1, 2 };
     glGenBuffers(1, &indicesId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesId);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    */
 
     // glEnableVertexAttribArray(1);
     // glVertexAttribPointer(1, 3, GLfloat, false, 0, 6);
@@ -122,21 +155,26 @@ void View3D<T>::initializeData()
     m_program->setAttributeBuffer(1,GL_FLOAT, 3, 3, 6);
 
     */
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glPointSize(5);
 }
 
 template<class T>
 void View3D<T>::paintGL()
 {
 
-
     glBindVertexArray(vertexBufferId);
+
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+
     m_program->bind();
 
     QMatrix4x4 matrix;
+
     matrix.perspective(60.0f, 1.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2+distance/20);
 
@@ -148,15 +186,14 @@ void View3D<T>::paintGL()
 
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
 
-
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glPointSize(5);
-
-    glDrawArrays(GL_POINTS, 0, 500*500);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_POINTS, 0,1);
 
 
 
     m_program->release();
+
+    glBindVertexArray(0);
 }
 
 
