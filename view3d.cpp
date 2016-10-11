@@ -30,17 +30,11 @@ template<class T>
 void View3D<T>::initializeGL()
 {
 
-
-
-
-
-
     glClearColor(0,0,0,255);
 
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_MULTISAMPLE);
-
 
     m_program = new QOpenGLShaderProgram(this);
 
@@ -57,32 +51,15 @@ void View3D<T>::initializeGL()
 
 //    glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
 
-
-
 }
 
 template<class T>
 void View3D<T>::initializeData()
 {
-    /*
-    if (vertexBuffer!=NULL) {
-        vertexBuffer->destroy();
-        delete(vertexBuffer);
-    }
-    vertexBuffer = new QOpenGLBuffer();
-
-    if (m_vaoPtr!=NULL) {
-        m_vaoPtr->destroy();
-        delete(m_vaoPtr);
-    }
-    m_vaoPtr = new QOpenGLVertexArrayObject();
-    */
 
     if (verticesPtr!=NULL) {
         free(verticesPtr);
     }
-
-
 
 
     //  3 Floats for Coordinates  * 2 Points per Triangle Strip
@@ -93,8 +70,8 @@ void View3D<T>::initializeData()
     verticesPtr = (GLfloat*) malloc(space);
 
 
-    const int xDist = 20;
-    const int yDist = 20;
+    const int xDist = 5;
+    const int yDist = 5;
 
     int idx = 0;
     for (int y=0; y<500; y++)
@@ -104,18 +81,15 @@ void View3D<T>::initializeData()
         verticesPtr[idx+1] = ((GLfloat) y*yDist)/(GLfloat)500.0f;
         verticesPtr[idx+2] = 0;
 
-
         // Color
         verticesPtr[idx+3] = 1.0f;
         verticesPtr[idx+4] = 0;
         verticesPtr[idx+5] = 0;
 
-
         // Coordinates
         verticesPtr[idx+6] = ((GLfloat) x*xDist)/(GLfloat)500.0f;
         verticesPtr[idx+7] = ((GLfloat) (y+1)*yDist)/(GLfloat)500.0f;
         verticesPtr[idx+8] = 0;
-
 
         // Color
         verticesPtr[idx+9]  = 1.0f;
@@ -177,6 +151,7 @@ void View3D<T>::paintGL()
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
+
     glDrawArrays(GL_POINTS, 0, 500*500);
 
 
