@@ -23,9 +23,10 @@ class View3D : public QOpenGLWidget
 
 private:
     GLuint vertexArrayId;
+    GLuint indicesArrayId;
 
     GLuint vertexBufferId;
-    GLuint indicesId;
+    GLuint indicesBufferId;
 
     const int nrOfPoints = 500*500;
     GLfloat* verticesPtr;
