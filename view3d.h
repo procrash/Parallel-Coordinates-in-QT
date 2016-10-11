@@ -13,6 +13,7 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
+#include <QOpenGLContext>
 
 using namespace std;
 
@@ -73,6 +74,10 @@ private:
 public:
     View3D(QWidget *parent)
            : QOpenGLWidget(parent), switchedToFullscreen(false), m_vaoPtr(NULL), m_vboPtr(NULL) {
+
+
+
+
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
