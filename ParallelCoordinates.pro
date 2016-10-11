@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui quickwidgets datavisualization
+QT       += core gui
 QMAKE_MAC_SDK = macosx10.12
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

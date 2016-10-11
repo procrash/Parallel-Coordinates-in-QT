@@ -22,6 +22,8 @@ class View3D : public QOpenGLWidget
 {
 
 private:
+    GLuint vertexArrayId;
+
     GLuint vertexBufferId;
     GLuint indicesId;
 
