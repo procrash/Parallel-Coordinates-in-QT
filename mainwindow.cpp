@@ -40,7 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     parallelCoordinatesPtr = new ParallelCoordinatesWidget<WIDGET_DATA_TYPE>(this->ui->centralWidget);
-    parallelCoordinatesPtr->setMinimumSize(QSize(300,300));
+    parallelCoordinatesPtr->setMinimumSize(QSize(300,150));
+    parallelCoordinatesPtr->resize(QSize(300,300));
 
     splitter->addWidget(parallelCoordinatesPtr);
 
@@ -51,7 +52,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     view3dPtr = new View3D<WIDGET_DATA_TYPE>(this->ui->centralWidget);
-    view3dPtr->setMinimumSize(300,300);
+    //view3dPtr->setMinimumSize(300,300);
+
+    view3dPtr->resize(QSize(300,300));
+
    // this->ui->verticalLayout->addWidget(view3dPtr);
 
      splitter->addWidget(view3dPtr);
