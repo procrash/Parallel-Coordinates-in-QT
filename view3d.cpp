@@ -103,6 +103,7 @@ void View3D<T>::initializeData()
     */
 
 
+    /*
     verticesPtr[0] = 0.0f;
     verticesPtr[1] = 1.0f;
     verticesPtr[2] = 0.0f;
@@ -112,8 +113,9 @@ void View3D<T>::initializeData()
     verticesPtr[6] = 1.0f;
     verticesPtr[7] = -1.0f;
     verticesPtr[8] = 0.0f;
+    */
 
-    /*
+
     GLfloat vertices[] = {
               +0.0f, +1.0f,   0.0f,
               -1.0f, -1.0f,   0.0f,
@@ -123,15 +125,16 @@ void View3D<T>::initializeData()
 
     cout << sizeof(vertices) << endl;
     memcpy(verticesPtr, vertices, sizeof(vertices));
-    */
 
-    // glGenVertexArrays(1, &vertexArrayId);
-    // glBindVertexArray(vertexArrayId);
+
 
 
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
     glBufferData(GL_ARRAY_BUFFER, 1*sizeof(GL_FLOAT), verticesPtr, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &vertexArrayId);
+    glBindVertexArray(vertexArrayId);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -156,6 +159,9 @@ void View3D<T>::initializeData()
 
     */
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
 }
@@ -164,8 +170,7 @@ template<class T>
 void View3D<T>::paintGL()
 {
 
-    glBindVertexArray(vertexBufferId);
-
+    glBindVertexArray(vertexArrayId);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -186,8 +191,8 @@ void View3D<T>::paintGL()
 
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawArrays(GL_POINTS, 0,1);
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_POINTS, 0,3);
 
 
 
