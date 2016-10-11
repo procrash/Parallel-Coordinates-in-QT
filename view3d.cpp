@@ -31,6 +31,10 @@ void View3D<T>::initializeGL()
 {
 
 
+
+
+
+
     glClearColor(0,0,0,255);
 
     glEnable(GL_DEPTH_TEST);
@@ -78,7 +82,7 @@ void View3D<T>::initializeData()
 
 
     srand (time(NULL));
-    verticesPtr = (GLfloat*) malloc(nrOfPoints*3*sizeof(GLfloat));
+    verticesPtr = (GLfloat*) malloc(nrOfPoints*3*2*sizeof(GLfloat));
 
 
     GLfloat vertices[] = {
@@ -87,25 +91,32 @@ void View3D<T>::initializeData()
           +1.0f, -1.0f,   0.0f
        };
 
-    memcpy(verticesPtr, vertices, sizeof(vertices));
+    // memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
-    /*
+    const int xDist = 20;
+    const int yDist = 20;
+
     int idx = 0;
     for (int y=0; y<500; y++)
     for (int x=0; x<500; x++) {
-        verticesPtr[idx]   =((GLfloat) x)/(GLfloat)50.0f; // 1/((rand()%1000)+1);
-        verticesPtr[idx+1] =((GLfloat) y)/(GLfloat)50.0f; // 1/((rand()%1000)+1);
-        verticesPtr[idx+2] =0; // 1/((rand()%1000)+1);
-        idx+=3;
+        verticesPtr[idx]   = ((GLfloat) x*xDist)/(GLfloat)500.0f;
+        verticesPtr[idx+1] = ((GLfloat) y*yDist)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx+2] = 0;
+
+        verticesPtr[idx+3] = ((GLfloat) x*xDist)/(GLfloat)500.0f;
+        verticesPtr[idx+4] = ((GLfloat) (y+1)*yDist)/(GLfloat)500.0f; // 1/((rand()%1000)+1);
+        verticesPtr[idx+5] = 0;
+
+        idx+=6;
     };
-    */
+
 
 
     m_vboPtr->create();
     m_vboPtr->bind();
     m_vboPtr->setUsagePattern(QOpenGLBuffer::StaticDraw);
-    m_vboPtr->allocate(verticesPtr, nrOfPoints*3*sizeof(GL_FLOAT));
+    m_vboPtr->allocate(verticesPtr, nrOfPoints*3*2*sizeof(GL_FLOAT));
 
     m_vaoPtr->create();
     m_vaoPtr->bind();
@@ -145,15 +156,13 @@ void View3D<T>::paintGL()
     // glPointSize(10.0f);
     //glDrawArrays(GL_POINT, 0, nrOfPoints);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
     //glDrawArrays(GL_LINES, 0,3);
 
 
     m_program->release();
     m_vaoPtr->release();
 
-    //m_vao.destroy();
-    //m_vbo.destroy();
 
 
 }
@@ -340,10 +349,11 @@ void View3D<T>::mousePressEvent(QMouseEvent *event)
 template<class T>
 void View3D<T>::wheelEvent(QWheelEvent *event)
 {
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
+//    int numDegrees = event->delta() / 8;
+//    int numSteps = numDegrees / 15;
 
-    distance += 10*numSteps;
+//    distance += 10*numSteps;
+    distance += event->delta();
     event->accept();
 
     update();
