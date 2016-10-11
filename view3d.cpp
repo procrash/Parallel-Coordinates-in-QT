@@ -117,7 +117,9 @@ void View3D<T>::initializeData()
 
 
     GLfloat vertices[] = {
-              +0.0f, +1.0f,   0.0f,
+              +0.0f, +0.0f,   0.0f,
+              +1.0f, +1.0f,   0.0f,
+              -1.0f, +1.0f,   0.0f,
               -1.0f, -1.0f,   0.0f,
               +1.0f, -1.0f,   0.0f
            };
@@ -127,9 +129,10 @@ void View3D<T>::initializeData()
     memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
+    // Create Vertex Buffer...
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GL_FLOAT), verticesPtr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), verticesPtr, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
@@ -138,15 +141,14 @@ void View3D<T>::initializeData()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     m_program->setAttributeBuffer(0,GL_FLOAT, 0, 0, 0);
 
-    /*
-    GLushort indices[] = { 0, 1, 2 };
-    glGenBuffers(1, &indicesId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesId);
+    // Create Index Buffer...
+    GLushort indices[] = { 0,1,2, 0,3,4 };
+    glGenBuffers(1, &indicesBufferId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferId);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    */
 
     // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(1, 3, GLfloat, false, 0, 6);
+
 
     /*
     glEnableVertexAttribArray(0);
@@ -190,7 +192,9 @@ void View3D<T>::paintGL()
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
 
     // glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawArrays(GL_POINTS, 0,3);
+//    glDrawArrays(GL_POINTS, 0,3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
 
 
 
