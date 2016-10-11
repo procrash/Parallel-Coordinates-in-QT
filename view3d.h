@@ -22,19 +22,16 @@ class View3D : public QOpenGLWidget
 {
 
 private:
+    GLuint vertexBufferId;
+    GLuint indicesId;
 
     const int nrOfPoints = 500*500;
-
     GLfloat* verticesPtr;
-
-    bool switchedToFullscreen;
 
     GLuint m_posAttr;
     GLuint m_matrixUniform;
 
     QOpenGLShaderProgram *m_program;
-    QOpenGLVertexArrayObject *m_vaoPtr;
-    QOpenGLBuffer *m_vboPtr;
 
     int minX = 0;
     int maxX = 1000;
@@ -73,11 +70,7 @@ private:
 
 public:
     View3D(QWidget *parent)
-           : QOpenGLWidget(parent), switchedToFullscreen(false), m_vaoPtr(NULL), m_vboPtr(NULL) {
-
-
-
-
+           : QOpenGLWidget(parent), verticesPtr(NULL) {
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
@@ -101,14 +94,6 @@ public:
                     case 2: testData[x+y*resX]--;
                 }
             }
-
-        /*
-        for (int y=0; y<resY; y++)
-            for (int x=0; x<resX;x++) {
-                int randomNr = rand()%200;
-                testData[x+y*resX] = randomNr;
-            }
-        */
     }
 
     void setDataStorePtr(DataStore<T>* dataStorePtr);
