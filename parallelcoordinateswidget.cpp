@@ -243,7 +243,6 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
             int idxPos = dataOrder.at(i);
 
-
             int xPos = slider->pos().x()+slider->getXPositionBar()+slider->getSliderWidth()/2;
             int yPos = slider->getYPositionForVal(ds.dimVal[idxPos]);
 
