@@ -81,8 +81,9 @@ void QRangeSlider::resizeEvent(QResizeEvent * event) {
     lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
     lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
 
-    grabHandleYPositionTop    = this->slideBarStartY;
-    grabHandleYPositionBottom = this->slideBarStartY;
+    grabHandleYPositionTop = this->getYPositionForVal(this->currentSetTopVal)-circleRadius;
+    grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
+
 
     centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
     centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
