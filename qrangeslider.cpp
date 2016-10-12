@@ -43,6 +43,10 @@ QRangeSlider::QRangeSlider(QWidget *parent)
     lineEditTop.setVisible(false);
     lineEditBottom.setVisible(false);
 
+
+    connect(&lineEditTop, SIGNAL(editingFinished()), this, SLOT(on_topTextBox_EditingFinishedTriggered()));
+    connect(&lineEditBottom, SIGNAL(editingFinished()), this, SLOT(on_bottomTextBox_EditingFinishedTriggered()));
+
 }
 
 void QRangeSlider::registerQRangeSliderObserver(QRangeSliderObserver* observer){
@@ -396,6 +400,7 @@ void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
 
             lineEditTop.setVisible(true);
             lineEditTop.setFocus();
+            lineEditTop.setText("");
 
             informObserversTextBoxFocused();
 
@@ -409,6 +414,7 @@ void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
 
                 lineEditBottom.setVisible(true);
                 lineEditBottom.setFocus();
+                lineEditBottom.setText("");
 
 
                 informObserversTextBoxFocused();
@@ -618,6 +624,123 @@ void QRangeSlider::drawSlideBar(QPainter* painter, int x, int y, int width, int 
     painter->drawPath(pathBackground);
 
 }
+
+void QRangeSlider::on_topTextBox_EditingFinishedTriggered() {
+    // Adjust top slider and update values...
+
+    cout << "Adjust top slider" << endl;
+
+    QString valStr = lineEditTop.text();
+    bool conversionOk = false;
+
+    // Used double here to achieve any possible data value...
+    double valTop = valStr.toDouble(&conversionOk);
+
+    if (!conversionOk) {
+        cout << "Value entered is not in correct range" << endl;
+        return;
+    }
+
+    // Now cast value to correct Data Type
+    WIDGET_DATA_TYPE valTopCorrectDataType = (WIDGET_DATA_TYPE) valTop;
+
+    // Do a range check of entered value...
+    if (valTopCorrectDataType>maxVal) valTopCorrectDataType = maxVal;
+    if (valTopCorrectDataType<minVal) valTopCorrectDataType = minVal;
+
+
+    WIDGET_DATA_TYPE saveValTop    = this->currentSetTopVal;
+    WIDGET_DATA_TYPE saveValBottom = this->currentSetBottomVal;
+
+
+    if (minValDisplayedOnTop) {
+        if (valTopCorrectDataType<=this->currentSetBottomVal) {
+            this->currentSetTopVal = valTopCorrectDataType;
+            grabHandleYPositionTop  = this->getYPositionForVal(this->currentSetTopVal)-circleRadius;
+        } else {
+            // Swap values...
+            int savedGrabHandleYPositionBottom = grabHandleYPositionBottom;
+
+            this->currentSetTopVal = saveValBottom;
+            this->currentSetBottomVal = valTopCorrectDataType;
+
+            grabHandleYPositionTop  = savedGrabHandleYPositionBottom;
+            grabHandleYPositionBottom = this->getYPositionForVal(valTopCorrectDataType)-circleRadius;
+
+            // QT Bugfix, handler is called twice when return is pressed...
+            lineEditBottom.setText(QString::number(valTopCorrectDataType));
+            lineEditTop.setText(QString::number(saveValBottom));
+
+            centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+            centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
+
+        }
+    }
+
+
+    this->deselect();
+    informObserversMinMaxValChanged();
+
+}
+
+void QRangeSlider::on_bottomTextBox_EditingFinishedTriggered() {
+    // Adjust bottom slider and update values...
+
+    cout << "Adjust bottom slider" << endl;
+
+    QString valStr = lineEditBottom.text();
+    bool conversionOk = false;
+
+    // Used double here to achieve any possible data value...
+    double valBottom = valStr.toDouble(&conversionOk);
+
+    if (!conversionOk) {
+        cout << "Value entered is not in correct range" << endl;
+        return;
+    }
+
+
+    // Now cast value to correct Data Type
+    WIDGET_DATA_TYPE valBottomCorrectDataType = (WIDGET_DATA_TYPE) valBottom;
+
+    // Do a range check of entered value...
+    if (valBottomCorrectDataType>maxVal) valBottomCorrectDataType = maxVal;
+    if (valBottomCorrectDataType<minVal) valBottomCorrectDataType = minVal;
+
+
+    WIDGET_DATA_TYPE saveValTop    = this->currentSetTopVal;
+    WIDGET_DATA_TYPE saveValBottom = this->currentSetBottomVal;
+
+
+    if (minValDisplayedOnTop) {
+        if (valBottomCorrectDataType>=this->currentSetTopVal) {
+            this->currentSetBottomVal = valBottomCorrectDataType;
+            grabHandleYPositionBottom  = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
+        } else {
+            int savedGrabHandleYPositionTop = grabHandleYPositionTop;
+
+            this->currentSetBottomVal = saveValTop;
+            this->currentSetTopVal = valBottomCorrectDataType;
+
+            grabHandleYPositionTop  = this->getYPositionForVal(valBottomCorrectDataType)-circleRadius;
+            grabHandleYPositionBottom = savedGrabHandleYPositionTop;
+
+            // QT Bugfix, handler is called twice when return is pressed...
+            lineEditBottom.setText(QString::number(saveValTop));
+            lineEditTop.setText(QString::number(valBottomCorrectDataType));
+
+            centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+            centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
+
+        }
+    }
+
+
+    this->deselect();
+    informObserversMinMaxValChanged();
+
+}
+
 
 /*
 void QRangeSlider::textBoxFocused(QRangeSlider* me) {

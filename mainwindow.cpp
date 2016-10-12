@@ -187,3 +187,5 @@ void MainWindow::on_pushButton_clicked()
     this->view3dPtr->setWindowFlags(Qt::Window);
     this->view3dPtr->showFullScreen();
 }
+
+

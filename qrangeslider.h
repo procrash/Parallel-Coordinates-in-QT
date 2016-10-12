@@ -11,6 +11,11 @@ using namespace std;
 
 class QRangeSlider : public QWidget
 {
+    Q_OBJECT
+
+public slots:
+    void on_topTextBox_EditingFinishedTriggered();
+    void on_bottomTextBox_EditingFinishedTriggered();
 
 public:
     QRangeSlider(QWidget *parent = 0);
@@ -119,6 +124,7 @@ protected:
     void resizeEvent(QResizeEvent * event)  Q_DECL_OVERRIDE;
     virtual void enterEvent(QEvent * event) Q_DECL_OVERRIDE;
     virtual void leaveEvent(QEvent * event) Q_DECL_OVERRIDE;
+
 
 
 };
