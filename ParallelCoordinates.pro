@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui quickwidgets datavisualization
+QT       += core gui
 QMAKE_MAC_SDK = macosx10.12
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -32,9 +32,9 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 DISTFILES += \
-    Form.ui.qml \
-    ThreeDSurface.qml
+    3dVisualization/fragmentShader.glsl \
+    3dVisualization/vertexShader.glsl
 
 RESOURCES += \
-    qml.qrc
+    3dvisualization.qrc
 

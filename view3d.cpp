@@ -32,132 +32,185 @@ void View3D<T>::initializeGL()
 
     glClearColor(0,0,0,255);
 
-
     glEnable(GL_DEPTH_TEST);
-   // glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
-    // glEnable(GL_LIGHTING);
-    // glEnable(GL_LIGHT0);
     glEnable(GL_MULTISAMPLE);
+
+    m_program = new QOpenGLShaderProgram(this);
+
+    m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertexShader.glsl");
+    m_program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragmentShader.glsl");
+
+    m_program->link();
+    m_posAttr = m_program->attributeLocation("posAttr");
+
+
+    initializeData();
+
+   // m_program->release();
+
+//    glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+
+}
+
+template<class T>
+void View3D<T>::initializeData()
+{
+
+    if (verticesPtr!=NULL) {
+        free(verticesPtr);
+    }
+
+
+    //  3 Floats for Coordinates  * 2 Points per Triangle Strip
+    // *3 (RGB Color Information) * 2 Points
+
+    const size_t space = nrOfPoints*3*2*3*2*sizeof(GLfloat);
+
+    verticesPtr = (GLfloat*) malloc(space);
+    memset(verticesPtr, 0, space);
+
+    const int xDist = 5;
+    const int yDist = 5;
+
+    /*
+    int idx = 0;
+    for (int y=0; y<500; y++)
+    for (int x=0; x<500; x++) {
+        // Coordinates
+        verticesPtr[idx]   = ((GLfloat) x*xDist)/(GLfloat)500.0f;
+        verticesPtr[idx+1] = ((GLfloat) y*yDist)/(GLfloat)500.0f;
+        verticesPtr[idx+2] = 0;
+
+        // Color
+        verticesPtr[idx+3] = 1.0f;
+        verticesPtr[idx+4] = 0;
+        verticesPtr[idx+5] = 0;
+
+        // Coordinates
+        verticesPtr[idx+6] = ((GLfloat) x*xDist)/(GLfloat)500.0f;
+        verticesPtr[idx+7] = ((GLfloat) (y+1)*yDist)/(GLfloat)500.0f;
+        verticesPtr[idx+8] = 0;
+
+        // Color
+        verticesPtr[idx+9]  = 1.0f;
+        verticesPtr[idx+10] = 0;
+        verticesPtr[idx+11] = 0;
+
+        idx+=12;
+    };
+
+    */
 
 
     /*
-    static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-*/
+    verticesPtr[0] = 0.0f;
+    verticesPtr[1] = 1.0f;
+    verticesPtr[2] = 0.0f;
+    verticesPtr[3] = -1.0f;
+    verticesPtr[4] = -1.0f;
+    verticesPtr[5] = 0.0f;
+    verticesPtr[6] = 1.0f;
+    verticesPtr[7] = -1.0f;
+    verticesPtr[8] = 0.0f;
+    */
+
+
+    GLfloat vertices[] = {
+              +0.0f, +0.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+              +1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+              -1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+              -1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+              +1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f
+           };
+
+
+    cout << sizeof(vertices) << endl;
+    memcpy(verticesPtr, vertices, sizeof(vertices));
+
+
+    // Create Vertex Buffer...
+    glGenBuffers(1, &vertexBufferId);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), verticesPtr, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &vertexArrayId);
+    glBindVertexArray(vertexArrayId);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, 0);
+
+
+    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 0, 6);
+
+    // Create Index Buffer...
+    GLushort indices[] = { 0,1,2, 0,3,4 };
+    glGenBuffers(1, &indicesBufferId);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferId);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // glEnableVertexAttribArray(1);
+
+
+    /*
+    glEnableVertexAttribArray(0);
+    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 6);
+
+    glEnableVertexAttribArray(1);
+    m_program->setAttributeBuffer(1,GL_FLOAT, 3, 3, 6);
+
+    */
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glPointSize(5);
 }
 
 template<class T>
 void View3D<T>::paintGL()
 {
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glOrtho(minX-distance, maxX+distance, minY-distance, maxY+distance, minZ+distance, maxZ-distance);
-
-//    glOrtho(minX, maxX, minY, maxY, minZ, maxZ);
-    glMatrixMode(GL_MODELVIEW);
-
-
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-
-    //glEnable ( GL_LIGHTING ) ;
+    glBindVertexArray(vertexArrayId);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+    m_program->bind();
+
+    QMatrix4x4 matrix;
+
+    matrix.perspective(60.0f, 1.0f, 0.1f, 100.0f);
+    matrix.translate(0, 0, -2+distance/20);
+
+    matrix.rotate(xRot / 16.0, 1.0, 0.0, 0.0);
+    matrix.rotate(yRot / 16.0, 0.0, 1.0, 0.0);
+    matrix.rotate(zRot / 16.0, 0.0, 0.0, 1.0);
+
+    m_program->setUniformValue(m_matrixUniform, matrix);
+
+    //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
+
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glDrawArrays(GL_POINTS, 0,3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
 
 
-    glTranslatef(500, 500, -1);
 
-    glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
+    m_program->release();
 
-    glTranslatef(-500, -500, -1);
-
-
-    //glLoadIdentity();
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(0,0,1);
-
-    int xDist = 10;
-    int yDist = 10;
-    int zDist = 10;
-
-    glPointSize(3.0f);
-
-//    if (dataStorePtr!=NULL) {
-
-    int nrPointsX = 100;
-    int nrPointsY = 100;
-
-    for (int y = 0; y<nrPointsY-1; y++) {
-      glBegin(GL_TRIANGLE_STRIP);
-      for (int x = 0; x<nrPointsX; x++) {
-        int z1 = testData[y*nrPointsX+x];
-        int z2 = testData[(y+1)*nrPointsX+x];
-
-        //cout << z1 << endl;
-        //cout << z2 << endl;
-        glVertex3f(x*xDist,  y*yDist, z1);
-        glVertex3f(x*xDist,  (y+1)*yDist, z2);
-      }
-      glEnd();
-    }
-
-        /*
-        int i = 0;
-        for (int x = 0; x<100; x++) {
-            for (int z=0; z<100; z++) {
-
-                vector<DataSet<WIDGET_DATA_TYPE>>* dataSets = dataStorePtr->getDataSet();
-
-                if (i<dataSets->size()-1) i++; else i=0;
-                DataSet<WIDGET_DATA_TYPE> data = dataSets->at(i);
-
-
-                WIDGET_DATA_TYPE val;
-
-                val = data.dimVal[1];
-                double dVal = (double)val;
-
-                WIDGET_DATA_TYPE min = dataStorePtr->getMinValPtr()[1];
-                WIDGET_DATA_TYPE max = dataStorePtr->getMaxValPtr()[1];
-
-                dVal/=dVal*500/(max-min);
-
-                glVertex3f(x*xDist,  z*zDist, dVal);
-
-            }
-        }
-        */
-       //  glEnd();
-        //}
-
-    /*
-    if (this->dataSetPtr!=NULL) {
-        glPointSize(3.0f);
-        glBegin(GL_POINTS);
-        for (uint64_t i=0; i<dataSetPtr->size(); i++) {
-            for (int j=0; j<nrOfDimensions; j++) {
-                glVertex3f(i*xDist, j*yDist, 0 /dataSetPtr->at(i).dimVal[j] / );
-            }
-        }
-        glEnd();
-    }
-    */
-
+    glBindVertexArray(0);
 }
+
 
 template<class T>
 void View3D<T>::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
     glViewport((width - side) / 2, (height - side) / 2, side, side);
-
-    cout << "MaxZ: " << maxZ << endl;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -225,10 +278,7 @@ void View3D<T>::mousePressEvent(QMouseEvent *event)
 template<class T>
 void View3D<T>::wheelEvent(QWheelEvent *event)
 {
-    int numDegrees = event->delta() / 8;
-    int numSteps = numDegrees / 15;
-
-    distance += 10*numSteps;
+    distance += event->delta();
     event->accept();
 
     update();
@@ -245,6 +295,7 @@ void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
     {
         setWindowFlags(Qt::Widget);
         showNormal();
+
     } else {
         setWindowFlags(Qt::Window);
         showFullScreen();

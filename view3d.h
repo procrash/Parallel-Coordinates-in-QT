@@ -10,6 +10,10 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+#include <QOpenGLContext>
 
 using namespace std;
 
@@ -18,6 +22,19 @@ class View3D : public QOpenGLWidget
 {
 
 private:
+    GLuint vertexArrayId;
+    GLuint indicesArrayId;
+
+    GLuint vertexBufferId;
+    GLuint indicesBufferId;
+
+    const int nrOfPoints = 500*500;
+    GLfloat* verticesPtr;
+
+    GLuint m_posAttr;
+    GLuint m_matrixUniform;
+
+    QOpenGLShaderProgram *m_program;
 
     int minX = 0;
     int maxX = 1000;
@@ -43,15 +60,20 @@ private:
     void setYRotation(int angle);
     void setZRotation(int angle);
 
+
+
+    void initializeData();
+
     // For testing purposes only...
     static const int resX = 100;
     static const int resY = 100;
     int testData[resX*resY];
 
 
+
 public:
     View3D(QWidget *parent)
-           : QOpenGLWidget(parent) {
+           : QOpenGLWidget(parent), verticesPtr(NULL) {
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
@@ -75,14 +97,6 @@ public:
                     case 2: testData[x+y*resX]--;
                 }
             }
-
-        /*
-        for (int y=0; y<resY; y++)
-            for (int x=0; x<resX;x++) {
-                int randomNr = rand()%200;
-                testData[x+y*resX] = randomNr;
-            }
-        */
     }
 
     void setDataStorePtr(DataStore<T>* dataStorePtr);
