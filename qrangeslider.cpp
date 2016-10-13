@@ -238,6 +238,90 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
         if (y>this->slideBarHeight) y= this->slideBarHeight;
         if (y<0) y=0;
 
+        int ySnapped = this->getYPositionForVal((double)(y)*(maxVal-minVal)/(double) this->slideBarHeight +minVal, true)-circleRadius;
+
+
+        if (this->minValDisplayedOnTop) {
+            if (topValGrab) {
+                // cout << "Check: " << ySnapped << "<=" << this->grabHandleYPositionBottom << endl;
+                if (ySnapped<=this->grabHandleYPositionBottom) {
+                    this->currentSetTopVal = (double)(ySnapped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionTop = ySnapped;
+                    // Readjust Hittest zone
+                    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+                } else {
+                    this->currentSetBottomVal = (double)(ySnapped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionBottom = ySnapped;
+                    // Readjust Hittest zone
+                    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
+                    bottomValGrab = true;
+                    topValGrab = false;
+                }
+            } else {
+                if (ySnapped>=this->grabHandleYPositionTop) {
+                    this->currentSetBottomVal = (double)(ySnapped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionBottom = ySnapped;
+                    // Readjust Hittest zone
+                    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
+                } else {
+                    this->currentSetTopVal = (double)(ySnapped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionTop = ySnapped;
+                    // Readjust Hittest zone
+                    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+
+                    bottomValGrab = false;
+                    topValGrab = true;
+
+                }
+
+            }
+        } else {
+
+            int ySnappedFlipped = this->getYPositionForVal((double)(y)*(maxVal-minVal)/(double) this->slideBarHeight +minVal, false)-circleRadius;
+            if (topValGrab) {
+                // cout << "Check: " << ySnapped << "<=" << this->grabHandleYPositionBottom << endl;
+                if (ySnapped<=this->grabHandleYPositionBottom) {
+                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionTop = ySnapped;
+                    // Readjust Hittest zone
+                    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+                } else {
+                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionBottom = ySnapped;
+                    // Readjust Hittest zone
+                    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
+                    bottomValGrab = true;
+                    topValGrab = false;
+                }
+            } else {
+                if (ySnapped>=this->grabHandleYPositionTop) {
+                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionBottom = ySnapped;
+                    // Readjust Hittest zone
+                    centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
+                } else {
+                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    // Snap to fixed values...
+                    grabHandleYPositionTop = ySnapped;
+                    // Readjust Hittest zone
+                    centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+
+                    bottomValGrab = false;
+                    topValGrab = true;
+
+                }
+            }
+
+        }
+
+        /*
         if (abs( grabHandleYPositionTop-(y+slideBarStartY)) <
             abs(grabHandleYPositionBottom-(y+slideBarStartY))
            )
@@ -258,13 +342,15 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
             this->currentSetTopVal = newValBottom;
             this->currentSetBottomVal = newValTop;
         }
-
+        */
 
         // The following code has been amended to snap in to specific values...
         // Commented out as it is causing problems when distances from position y to min and max are equal
         /*
-        grabHandleYPositionTop = this->getYPositionForVal(this->currentSetTopVal)-circleRadius;
-        grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
+        grabHandleYPositionTop = this->getYPositionForVal(this->currentSetTopVal, true)-circleRadius;
+        grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal, true)-circleRadius;
+        centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
+        centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
         */
 
         // informObserversMinMaxValChanged();
@@ -397,10 +483,10 @@ void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
 
         if (hitTestTopTextBox(x,y)) {
 
-            cout << "Double click top" << endl;
 
             lineEditTop.setVisible(true);
             lineEditTop.setFocus();
+//            lineEditTop.setText(QString::number(this->currentSetTopVal));
             lineEditTop.setText("");
 
             informObserversTextBoxFocused();
@@ -411,12 +497,11 @@ void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
         } else
             if (hitTestBottomTextBox(x,y)) {
 
-                cout << "Double click bottom" << endl;
-
                 lineEditBottom.setVisible(true);
                 lineEditBottom.setFocus();
                 lineEditBottom.setText("");
 
+                //lineEditBottom.setText(QString::number(this->currentSetBottomVal));
 
                 informObserversTextBoxFocused();
 
@@ -465,6 +550,7 @@ void QRangeSlider::mouseReleaseEvent(QMouseEvent *event) {
     informObserversMinMaxValChanged();
 
     update();
+//    event->accept();
 }
 
 void QRangeSlider::hideTextboxesIfNecessary() {
@@ -653,7 +739,6 @@ void QRangeSlider::on_topTextBox_EditingFinishedTriggered() {
     WIDGET_DATA_TYPE saveValTop    = this->currentSetTopVal;
     WIDGET_DATA_TYPE saveValBottom = this->currentSetBottomVal;
 
-
     if (minValDisplayedOnTop) {
         if (valTopCorrectDataType<=this->currentSetBottomVal) {
             this->currentSetTopVal = valTopCorrectDataType;
@@ -710,7 +795,7 @@ void QRangeSlider::on_bottomTextBox_EditingFinishedTriggered() {
 
 
     WIDGET_DATA_TYPE saveValTop    = this->currentSetTopVal;
-    WIDGET_DATA_TYPE saveValBottom = this->currentSetBottomVal;
+    // WIDGET_DATA_TYPE saveValBottom = this->currentSetBottomVal;
 
 
     if (minValDisplayedOnTop) {
