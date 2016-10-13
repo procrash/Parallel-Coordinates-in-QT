@@ -18,7 +18,9 @@ SOURCES += main.cpp\
     parallelcoordinateswidget.cpp \
     view3d.cpp \
     datastore.cpp \
-    qrangesliderobserver.cpp
+    qrangesliderobserver.cpp \
+    parallelcoordinatesworker.cpp \
+    parallelcoordinatesworkerobserver.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -27,7 +29,9 @@ HEADERS  += mainwindow.h \
     view3d.h \
     dataset.h \
     datastore.h \
-    qrangesliderobserver.h
+    qrangesliderobserver.h \
+    parallelcoordinatesworker.h \
+    parallelcoordinatesworkerobserver.h
 
 FORMS    += mainwindow.ui
 
