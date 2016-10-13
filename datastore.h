@@ -28,6 +28,15 @@ public:
 //    WIDGET_DATA_TYPE getMaxValDimension(int dimensionNr);
     void generateRandomDataSet(int nrOfValues);
 
+    T getDataRange(int dimensionNr) {
+        if (dimensionNr>nrOfDimensions) return 0;
+
+        T dimMaxVal = maxVal[dimensionNr];
+        T dimMinVal = minVal[dimensionNr];
+
+        return (dimMaxVal>=dimMinVal) ? dimMaxVal-dimMinVal : dimMinVal-dimMaxVal;
+    }
+
     T* getMinValPtr();
     T* getMaxValPtr();
     vector<DataSet<T>>* getDataSet();

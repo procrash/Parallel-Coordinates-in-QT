@@ -92,8 +92,7 @@ void MainWindow::resizeEvent(QResizeEvent* event){
 
 void MainWindow::on_actionCalc_triggered()
 {
-    this->parallelCoordinatesPtr->recalculateDrawingLines();
-    this->update();
+    this->parallelCoordinatesPtr->calcDataInBackground();
 }
 
 
@@ -129,10 +128,6 @@ void MainWindow::loadFileData(QString fileName) {
         this->parallelCoordinatesPtr->setDataStorePtr(&dataStore);
         this->view3dPtr->setDataStorePtr(&dataStore);
 
-        this->parallelCoordinatesPtr->setMinMaxGUI();
-        this->parallelCoordinatesPtr->recalculateDrawingLines();
-
-
         is.close();
     }
 
@@ -150,7 +145,6 @@ void MainWindow::on_actionLoad_Data_from_File_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"",tr("Files (*.*)"));
     // fileName = "/Users/wolfgangmeyerle/Downloads/of_v0.9.3_osx_release/apps/myApps/Salsa20/bin/Salsa20Debug.app/Contents/Resources/petyaData.dat";
     loadFileData(fileName);
-    update();
 }
 
 
@@ -158,7 +152,6 @@ void MainWindow::on_actionLoad_Default_Data_triggered()
 {
     QString fileName = "/Users/wolfgangmeyerle/Downloads/of_v0.9.3_osx_release/apps/myApps/Salsa20/bin/Salsa20Debug.app/Contents/Resources/petyaData.dat";
     loadFileData(fileName);
-    update();
 }
 
 void MainWindow::on_actionGenerate_Random_Data_triggered()
@@ -167,10 +160,7 @@ void MainWindow::on_actionGenerate_Random_Data_triggered()
     this->parallelCoordinatesPtr->setDataStorePtr(&dataStore);
     this->view3dPtr->setDataStorePtr(&dataStore);
 
-    this->parallelCoordinatesPtr->setMinMaxGUI();
-    this->parallelCoordinatesPtr->recalculateDrawingLines();
-
-    update();
+    this->parallelCoordinatesPtr->calcDataInBackground();
 }
 
 void MainWindow::on_actionDraw_data_out_of_range_changed()
