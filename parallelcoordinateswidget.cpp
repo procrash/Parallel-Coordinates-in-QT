@@ -199,6 +199,9 @@ void ParallelCoordinatesWidget<T>::reduceDrawingDataSet() {
 template <class T>
 void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
+    QRangeSlider* first = sliders.at(0);
+    int startX =  first->x()+first->getXPositionBar()+first->getSliderWidth()/2;
+
     // this->minMaxGUISet = false;
     // setMinMaxGUI();
 
@@ -245,6 +248,9 @@ void ParallelCoordinatesWidget<T>::recalculateDrawingLines() {
 
             int xPos = slider->pos().x()+slider->getXPositionBar()+slider->getSliderWidth()/2;
             int yPos = slider->getYPositionForVal(ds.dimVal[idxPos]);
+
+            // Start a 0 instead of first slider position
+            xPos-=startX;
 
             if (slider->getCurrentSetMinVal()>ds.dimVal[idxPos] || slider->getCurrentSetMaxVal()<ds.dimVal[idxPos]) {
                 // Data is out of selection scope, paint it grey
@@ -304,7 +310,14 @@ void ParallelCoordinatesWidget<T>::qrangeSliderMinMaxValChanged(QRangeSlider* so
 
 template <class T>
 void ParallelCoordinatesWidget<T>::renderLines() {
-    QPixmap result(this->size().width(), this->size().height());
+    if (this->sliders.size()==0) return;
+    QRangeSlider* first = sliders.at(0);
+    QRangeSlider* last = sliders.at(sliders.size()-1);
+
+    int startX =  first->x()+first->getXPositionBar()+first->getSliderWidth()/2;
+    int endX = last->x()+last->getXPositionBar()+last->getSliderWidth()/2;
+
+    QPixmap result(endX-startX, this->size().height());
 
     const QPalette &pal = this->palette();
     QPalette::ColorRole bg = this->backgroundRole();
@@ -368,10 +381,17 @@ void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
 
     // QRect rct = evt->rect();
 
+    if (this->sliders.size()==0) return;
+    QRangeSlider* first = sliders.at(0);
+    QRangeSlider* last = sliders.at(sliders.size()-1);
+
+    int startX =  first->x()+first->getXPositionBar()+first->getSliderWidth()/2;
+    int endX = last->x()+last->getXPositionBar()+last->getSliderWidth()/2;
+
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.drawPixmap(0,0,this->size().width(), this->size().height(), pm);
+    painter.drawPixmap(startX,0,endX-startX, this->size().height(), pm);
 }
 
 template <class T>
