@@ -65,7 +65,8 @@ public:
     void setDataStorePtr(DataStore<T>* dataStore);
     void initialize(int xPositionDimensions[nrOfDimensions], int width, int height, const QPalette* palette, QPalette::ColorRole backgroundRole);
     void setXPositionDimensions(int* xPositionDimensions);
-
+    void setMinMaxValScope(T minValScope[nrOfDimensions], T maxValScope[nrOfDimensions]);
+    void setMinValDisplayedOnTop(bool minValDisplayedOnTop[nrOfDimensions]);
     void resize(int width, int height);
     QImage getImage();
 

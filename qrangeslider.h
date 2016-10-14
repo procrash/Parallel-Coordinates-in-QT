@@ -43,7 +43,9 @@ public:
     void unsetHighlights();
 
     void deselect();
-
+    int getSlideBarHeight();
+    int getSlideBarStartY();
+    bool getMinValDisplayedOnTop();
 
 private:
 
@@ -111,6 +113,7 @@ private:
     bool hitTestBottomTextBox(int x, int y);
     bool hitTestOnSliderBar(int x, int y);
     inline void resetButtonHighlights();
+
 
     void informObserversTextBoxFocused();
     void informObserversMinMaxValChanged();
