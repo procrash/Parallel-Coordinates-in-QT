@@ -46,7 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    //tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     tableWidget->setAlternatingRowColors(true);
     tableWidget->setStyleSheet("alternate-background-color: lightgrey;background-color: white;");
