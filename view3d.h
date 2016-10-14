@@ -28,7 +28,9 @@ private:
     GLuint vertexBufferId;
     GLuint indicesBufferId;
 
-    const int nrOfPoints = 500*500;
+    const int nrOfPointsX = 300;
+    const int nrOfPointsY = 300;
+    const int nrOfPoints = nrOfPointsX*nrOfPointsY;
     GLfloat* verticesPtr;
 
     GLuint m_posAttr;

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <vector>
 
 #include "parallelcoordinatesglobals.h"
@@ -41,4 +40,5 @@ public:
     T* getMaxValPtr();
     vector<DataSet<T>>* getDataSet();
 };
+
 
