@@ -17,7 +17,7 @@
 #include "datastore.h"
 
 #include "parallelcoordinateswidget.h"
-
+#include "parallelcoordinatesglobals.h"
 
 
 using namespace std;
@@ -40,6 +40,33 @@ MainWindow::MainWindow(QWidget *parent) :
     parallelCoordinatesPtr->resize(QSize(300,300));
 
     splitter->addWidget(parallelCoordinatesPtr);
+
+    tableWidget = new QTableWidget(this->ui->centralWidget);
+    tableWidget->setShowGrid(false);
+    tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    tableWidget->setAlternatingRowColors(true);
+    tableWidget->setStyleSheet("alternate-background-color: lightgrey;background-color: white;");
+
+    //tableWidget->setsortingEnabled(true);
+    /*
+    tableWidget->setRowCount(0);
+    QStringList tableHeader;
+    tableHeader<<"#"<<"Name"<<"Text";
+    tableWidget->setHorizontalHeaderLabels(tableHeader);
+    */
+    tableWidget->setVisible(false);
+    splitter->addWidget(tableWidget);
+
+    /*
+    QTableView* tableView = new QTableView(this->ui->centralWidget);
+    splitter->addWidget(tableView);
+
+    tableView->setColu
+    */
 
 //    this->ui->verticalLayout->addWidget(parallelCoordinatesPtr);
 
@@ -129,6 +156,28 @@ void MainWindow::loadFileData(QString fileName) {
         this->view3dPtr->setDataStorePtr(&dataStore);
 
         is.close();
+
+        vector<DataSet<WIDGET_DATA_TYPE>>* dataSetPtr = dataStore.getDataSet();
+
+        // Add data to tableWidget as well...
+        tableWidget->setColumnCount(nrOfDimensions);
+        tableWidget->setRowCount(dataSetPtr->size());
+
+        uint64_t rowNr = 0;
+        for (vector<DataSet<WIDGET_DATA_TYPE>>::iterator it = dataSetPtr->begin(); it!=dataSetPtr->end(); ++it) {
+            for (int colNr=0; colNr<nrOfDimensions; colNr++) {
+                DataSet<WIDGET_DATA_TYPE> data = *it;
+                QTableWidgetItem* item = new QTableWidgetItem(0);
+                item->setData(Qt::DisplayRole, data.dimVal[colNr]);
+
+                tableWidget->setItem(rowNr, colNr, item);
+            }
+            rowNr++;
+        }
+
+        tableWidget->setSortingEnabled(true);
+        tableWidget->setVisible(true);
+
     }
 
     /*
@@ -145,6 +194,8 @@ void MainWindow::on_actionLoad_Data_from_File_triggered()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"",tr("Files (*.*)"));
     // fileName = "/Users/wolfgangmeyerle/Downloads/of_v0.9.3_osx_release/apps/myApps/Salsa20/bin/Salsa20Debug.app/Contents/Resources/petyaData.dat";
     loadFileData(fileName);
+
+
 }
 
 
