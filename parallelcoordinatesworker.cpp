@@ -31,9 +31,15 @@ void ParallelCoordinatesWorker<T>::initialize(int xPositionDimensions[nrOfDimens
 
     this->valuesHeight = height;
 
+    this->dataOrder.clear();
+
     for (int i=0; i<nrOfDimensions; i++) {
         this->xPositionDimensions[i] = xPositionDimensions[i];
+        this->dataOrder.push_back(i);
     }
+
+
+
 }
 
 template<class T>
@@ -343,6 +349,22 @@ template<class T>
 void ParallelCoordinatesWorker<T>::setXPositionDimensions(int* xPositionDimensions) {
     for (int i=0; i<nrOfDimensions;i++) {
         this->xPositionDimensions[i] = xPositionDimensions[i];
+    }
+}
+
+
+template<class T>
+void ParallelCoordinatesWorker<T>::setMinMaxValScope(T minValScope[nrOfDimensions], T maxValScope[nrOfDimensions]) {
+    for (int i=0; i<nrOfDimensions; i++) {
+        this->currentSetMinVal[i] = minValScope[i];
+        this->currentSetMaxVal[i] = maxValScope[i];
+    }
+}
+
+template<class T>
+void ParallelCoordinatesWorker<T>::setMinValDisplayedOnTop(bool minValDisplayedOnTop[nrOfDimensions]) {
+    for (int i=0; i<nrOfDimensions; i++) {
+        this->minValDisplayedOnTop[i] = minValDisplayedOnTop[i];
     }
 }
 

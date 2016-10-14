@@ -90,6 +90,18 @@ void QRangeSlider::resizeEvent(QResizeEvent * event) {
 
 }
 
+int QRangeSlider::getSlideBarHeight() {
+    return slideBarHeight;
+}
+
+int QRangeSlider::getSlideBarStartY() {
+    return slideBarStartY+this->circleRadius;
+}
+
+bool QRangeSlider::getMinValDisplayedOnTop() {
+    return this->minValDisplayedOnTop;
+}
+
 WIDGET_DATA_TYPE QRangeSlider::getCurrentSetMinVal() {
     if (this->currentSetBottomVal<=this->currentSetTopVal)
         return this->currentSetBottomVal;
