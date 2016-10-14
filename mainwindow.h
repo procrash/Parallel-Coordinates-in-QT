@@ -9,13 +9,12 @@
 #include "parallelcoordinatesglobals.h"
 
 #include "datastore.h"
+#include "datastore.cpp"
 #include "parallelcoordinateswidget.h"
 #include "parallelcoordinateswidget.cpp"
-#include "view3d.h"
-#include "view3d.cpp"
-#include "datastore.cpp"
 
 #include "view3d.h"
+#include "view3d.cpp"
 
 using namespace std;
 

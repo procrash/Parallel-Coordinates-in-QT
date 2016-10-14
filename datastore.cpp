@@ -1,3 +1,4 @@
+#pragma once
 #include <time.h>
 #include <stdlib.h>
 
@@ -73,6 +74,8 @@ template<class T>
 vector<DataSet<T>>* DataStore<T>::getDataSet() {
     return &dataSets;
 }
+
+
 
 /*
 WIDGET_DATA_TYPE DataStore::getMinValDimension(int dimensionNr) {

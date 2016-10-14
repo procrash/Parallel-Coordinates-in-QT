@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "datastore.h"
+#include "datastore.cpp"
 
 using namespace std;
 
@@ -65,7 +66,7 @@ void View3D<T>::initializeData()
     //  3 Floats for Coordinates  * 2 Points per Triangle Strip
     // *3 (RGB Color Information) * 2 Points
 
-    const size_t space = nrOfPoints*3*2*3*2*sizeof(GLfloat);
+    const size_t space = nrOfPoints*3*2*sizeof(GLfloat);
 
     verticesPtr = (GLfloat*) malloc(space);
     memset(verticesPtr, 0, space);
@@ -73,34 +74,29 @@ void View3D<T>::initializeData()
     const int xDist = 5;
     const int yDist = 5;
 
-    /*
+
+
+    // vector<DataSet<T>>* data = dataStorePtr->getDataSetPtr();
+
+     this->dataStorePtr->getDataSetPtr();
+
     int idx = 0;
-    for (int y=0; y<500; y++)
-    for (int x=0; x<500; x++) {
+    for (int y=0; y<nrOfPointsY; y++)
+    for (int x=0; x<nrOfPointsX; x++) {
         // Coordinates
-        verticesPtr[idx]   = ((GLfloat) x*xDist)/(GLfloat)500.0f;
-        verticesPtr[idx+1] = ((GLfloat) y*yDist)/(GLfloat)500.0f;
+        verticesPtr[idx]   = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPtr[idx+1] = ((GLfloat) y*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
         verticesPtr[idx+2] = 0;
 
-        // Color
-        verticesPtr[idx+3] = 1.0f;
-        verticesPtr[idx+4] = 0;
+        // Coordinates
+        verticesPtr[idx+3] = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPtr[idx+4] = ((GLfloat) (y+1)*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
         verticesPtr[idx+5] = 0;
 
-        // Coordinates
-        verticesPtr[idx+6] = ((GLfloat) x*xDist)/(GLfloat)500.0f;
-        verticesPtr[idx+7] = ((GLfloat) (y+1)*yDist)/(GLfloat)500.0f;
-        verticesPtr[idx+8] = 0;
-
-        // Color
-        verticesPtr[idx+9]  = 1.0f;
-        verticesPtr[idx+10] = 0;
-        verticesPtr[idx+11] = 0;
-
-        idx+=12;
+        idx+=6;
     };
 
-    */
+
 
 
     /*
@@ -115,24 +111,25 @@ void View3D<T>::initializeData()
     verticesPtr[8] = 0.0f;
     */
 
+    //
+    // GLfloat vertices[] = {
+    //          +0.0f, +0.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+    //          +1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+    //          -1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+    //          -1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
+    //          +1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f
+    //       };
 
-    GLfloat vertices[] = {
-              +0.0f, +0.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-              +1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-              -1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-              -1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-              +1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f
-           };
 
 
-    cout << sizeof(vertices) << endl;
-    memcpy(verticesPtr, vertices, sizeof(vertices));
+    // cout << sizeof(vertices) << endl;
+    // memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
     // Create Vertex Buffer...
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), verticesPtr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, space, verticesPtr, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
@@ -141,13 +138,15 @@ void View3D<T>::initializeData()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, 0);
 
 
-    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 0, 6);
+    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
 
+    /*
     // Create Index Buffer...
     GLushort indices[] = { 0,1,2, 0,3,4 };
     glGenBuffers(1, &indicesBufferId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferId);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    */
 
     // glEnableVertexAttribArray(1);
 
@@ -195,9 +194,10 @@ void View3D<T>::paintGL()
 
     // glDrawArrays(GL_TRIANGLES, 0, 3);
 //    glDrawArrays(GL_POINTS, 0,3);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-
-
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+    for (int i=0; i<nrOfPointsY;i++) {
+        glDrawArrays(GL_TRIANGLE_STRIP, i*nrOfPointsX, i*nrOfPointsX+nrOfPointsX);
+    }
 
 
     m_program->release();
