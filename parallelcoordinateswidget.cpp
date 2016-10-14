@@ -241,6 +241,10 @@ void ParallelCoordinatesWidget<T>::calcDataInBackground() {
 
     worker.setMinValDisplayedOnTop(minValDisplayedOnTop);
 
+    if (worker.isRunning()) {
+        worker.terminate();
+    }
+
     worker.start();
 }
 
