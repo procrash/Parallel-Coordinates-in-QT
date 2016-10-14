@@ -1,6 +1,8 @@
 #include "view3d.h"
 #include <iostream>
 #include <vector>
+#include <string>
+
 #include "datastore.h"
 #include "datastore.cpp"
 
@@ -25,6 +27,58 @@ template<class T>
 QSize View3D<T>::sizeHint() const
 {
     return QSize(600, 600);
+}
+
+template<class T>
+QString View3D<T>::readStringFromResourceFile(QString filenameIncludingPath) {
+    QString result = "";
+
+    QFile f(filenameIncludingPath);
+    if (!f.open(QFile::ReadOnly | QFile::Text)) { return result; }
+
+    QTextStream in(&f);
+    //qDebug() << f.size() << in.readAll();
+    result = in.readAll();
+    f.close();
+
+}
+
+
+template<class T>
+GLuint View3D<T>::compileShaders() {
+    GLuint vertex_shader_id;
+    GLuint fragment_shader_id;
+
+    GLuint program_id;
+
+
+    const GLchar *vertexShaderStr   = (const GLchar *) readStringFromResourceFile(":/shaders/vertexShader.glsl").toStdString().c_str();
+    const GLchar *fragmentShaderStr = (const GLchar *) readStringFromResourceFile(":/shaders/fragmentShader.glsl").toStdString().c_str();
+
+    // Create Vertex Shader
+    vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader_id, 1, &vertexShaderStr, NULL);
+    glCompileShader(vertex_shader_id);
+
+    // Create Fragment Shader
+    fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader_id, 1, &fragmentShaderStr, NULL);
+    glCompileShader(fragment_shader_id);
+
+    // Create Program, attach shaders and link
+    program_id = glCreateProgram();
+    glAttachShader(program_id, vertex_shader_id);
+    glAttachShader(program_id, fragment_shader_id);
+    glLinkProgram(program_id);
+
+    // Free resources as the program has now the shaders...
+    glDeleteShader(vertex_shader_id);
+    glDeleteShader(fragment_shader_id);
+
+    delete(vertexShaderStr);
+    delete(fragmentShaderStr);
+
+    return program_id;
 }
 
 template<class T>
@@ -58,18 +112,26 @@ template<class T>
 void View3D<T>::initializeData()
 {
 
-    if (verticesPtr!=NULL) {
-        free(verticesPtr);
+    if (verticesPositionsPtr!=NULL) {
+        free(verticesPositionsPtr);
     }
 
+    if (verticesColorsPtr!=NULL) {
+        free(verticesColorsPtr);
+    }
 
     //  3 Floats for Coordinates  * 2 Points per Triangle Strip
     // *3 (RGB Color Information) * 2 Points
 
-    const size_t space = nrOfPoints*3*2*sizeof(GLfloat);
+    const size_t spaceVerticesPositions = nrOfPoints*3*2*sizeof(GLfloat);
 
-    verticesPtr = (GLfloat*) malloc(space);
-    memset(verticesPtr, 0, space);
+    verticesPositionsPtr = (GLfloat*) malloc(spaceVerticesPositions);
+    memset(verticesPositionsPtr, 0, spaceVerticesPositions);
+
+    const size_t spaceVerticesColors = nrOfPoints * 3 * sizeof(GLfloat);
+
+    verticesColorsPtr = (GLfloat*) malloc(spaceVerticesColors);
+    memset(verticesColorsPtr, 0, spaceVerticesColors);
 
     const int xDist = 5;
     const int yDist = 5;
@@ -78,67 +140,78 @@ void View3D<T>::initializeData()
 
     // vector<DataSet<T>>* data = dataStorePtr->getDataSetPtr();
 
-     this->dataStorePtr->getDataSetPtr();
+    // this->dataStorePtr->getDataSetPtr();
+
+
 
     int idx = 0;
     for (int y=0; y<nrOfPointsY; y++)
     for (int x=0; x<nrOfPointsX; x++) {
-        // Coordinates
-        verticesPtr[idx]   = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
-        verticesPtr[idx+1] = ((GLfloat) y*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
-        verticesPtr[idx+2] = 0;
+
 
         // Coordinates
-        verticesPtr[idx+3] = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
-        verticesPtr[idx+4] = ((GLfloat) (y+1)*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
-        verticesPtr[idx+5] = 0;
+        verticesPositionsPtr[idx]   = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPositionsPtr[idx+1] = ((GLfloat) y*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
+        verticesPositionsPtr[idx+2] = 0; //perlin.Get2D(x,y)/90000;
+        // cout << perlin.Get2D(x,y) << endl;
+
+        // Coordinates
+        verticesPositionsPtr[idx+3] = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPositionsPtr[idx+4] = ((GLfloat) (y+1)*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
+        verticesPositionsPtr[idx+5] = 0; //perlin.Get2D(x,(y+1))/90000;;
 
         idx+=6;
     };
 
+    idx = 0;
+    int colorIdx =0;
 
-
-
-    /*
-    verticesPtr[0] = 0.0f;
-    verticesPtr[1] = 1.0f;
-    verticesPtr[2] = 0.0f;
-    verticesPtr[3] = -1.0f;
-    verticesPtr[4] = -1.0f;
-    verticesPtr[5] = 0.0f;
-    verticesPtr[6] = 1.0f;
-    verticesPtr[7] = -1.0f;
-    verticesPtr[8] = 0.0f;
-    */
-
-    //
-    // GLfloat vertices[] = {
-    //          +0.0f, +0.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          +1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          -1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          -1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          +1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f
-    //       };
-
-
+    // Set Colors for Vertices...
+    for (int y=0; y<nrOfPointsY; y++)
+    for (int x=0; x<nrOfPointsX; x++) {
+        if (colorIdx%3==0) {
+            verticesColorsPtr[idx]   = 1.0f;
+            verticesColorsPtr[idx+1] = 0.0f;
+            verticesColorsPtr[idx+2] = 0;
+        } else if (colorIdx%3==1) {
+            verticesColorsPtr[idx]   = 0;
+            verticesColorsPtr[idx+1] = 1.0f;
+            verticesColorsPtr[idx+2] = 0;
+        } else if (colorIdx%3==2) {
+            verticesColorsPtr[idx]   = 0;
+            verticesColorsPtr[idx+1] = 0;
+            verticesColorsPtr[idx+2] = 1.0f;
+        }
+        colorIdx++;
+        idx+=3;
+    }
 
     // cout << sizeof(vertices) << endl;
     // memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
-    // Create Vertex Buffer...
+    // Create Vertex Position Buffer...
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, space, verticesPtr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, spaceVerticesPositions, verticesPositionsPtr, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, 0);
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
+
+
+    // Create Vertex Color Buffer...
+    glGenBuffers(1, &vertexBufferColorsId);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferColorsId);
+    glBufferData(GL_ARRAY_BUFFER, spaceVerticesColors, verticesColorsPtr, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    m_program->setAttributeBuffer(1,GL_FLOAT, 0, 3, 0);
+
 
     /*
     // Create Index Buffer...
@@ -176,7 +249,6 @@ void View3D<T>::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
     m_program->bind();
 
     QMatrix4x4 matrix;
@@ -188,6 +260,8 @@ void View3D<T>::paintGL()
     matrix.rotate(yRot / 16.0, 0.0, 1.0, 0.0);
     matrix.rotate(zRot / 16.0, 0.0, 0.0, 1.0);
 
+    matrix.translate(xDistance, yDistance, 0);
+
     m_program->setUniformValue(m_matrixUniform, matrix);
 
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
@@ -195,10 +269,17 @@ void View3D<T>::paintGL()
     // glDrawArrays(GL_TRIANGLES, 0, 3);
 //    glDrawArrays(GL_POINTS, 0,3);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
+
     for (int i=0; i<nrOfPointsY;i++) {
         glDrawArrays(GL_TRIANGLE_STRIP, i*nrOfPointsX, i*nrOfPointsX+nrOfPointsX);
     }
 
+    /*
+    for (int i=0; i<nrOfDimensions; i++) {
+        glDrawArrays(GL_POINT, 0, );
+    }
+    */
 
     m_program->release();
 
@@ -252,6 +333,17 @@ void View3D<T>::setZRotation(int angle)
 }
 
 template<class T>
+void setTranslationX(int distance) {
+
+}
+
+template<class T>
+void setTranslationY(int distance) {
+
+}
+
+
+template<class T>
 void View3D<T>::mouseMoveEvent(QMouseEvent *event)
 {
     int dx = event->x() - lastPos.x();
@@ -261,8 +353,14 @@ void View3D<T>::mouseMoveEvent(QMouseEvent *event)
         setXRotation(xRot + 8 * dy);
         setYRotation(yRot + 8 * dx);
     } else if (event->buttons() & Qt::RightButton) {
+
         setXRotation(xRot + 8 * dy);
         setZRotation(zRot + 8 * dx);
+
+        /*
+        xDistance+=dx/100;
+        this->update();
+        */
     }
 
 
@@ -312,5 +410,24 @@ void View3D<T>::keyPressEvent(QKeyEvent *keyEvent) {
             showNormal();
         }
     }
+
+    if (keyEvent->key() == Qt::Key_A) {
+        xDistance-=0.05;
+        this->update();
+    }
+    if (keyEvent->key() == Qt::Key_D) {
+        xDistance+=0.05;
+        this->update();
+    }
+
+    if (keyEvent->key() == Qt::Key_W) {
+        yDistance+=0.05;
+        this->update();
+    }
+    if (keyEvent->key() == Qt::Key_S) {
+        yDistance-=0.05;
+        this->update();
+    }
+
 }
 
