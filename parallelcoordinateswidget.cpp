@@ -79,6 +79,8 @@ void ParallelCoordinatesWidget<T>::setDataStorePtr(DataStore<T>* dataStore) {
     maxValPtr = dataStore->getMaxValPtr();
 
 
+    this->setMinMaxGUI();
+
     // Set dataSets also in worker thread...
     worker.setDataStorePtr(dataStore);
 }
@@ -149,7 +151,7 @@ void ParallelCoordinatesWidget<T>::paintEvent(QPaintEvent *evt) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.drawPixmap(startX,0,endX-startX, this->size().height(), pm);
+    painter.drawPixmap(startX,first->getSlideBarStartY(),endX-startX, first->getSlideBarHeight(), pm);
 }
 
 template <class T>
@@ -182,22 +184,63 @@ template<class T>
 void ParallelCoordinatesWidget<T>::calcDataInBackground() {
     cout << "Widget Size: " << this->width() << " " << this->height() << endl;
 
+
+    // Order slider along x-Axis
     this->reorderSliders();
 
-    worker.resize(this->width(), this->height());
+    if (this->sliders.size()==0) return;
 
+    // Determine dimensions of Image to calculate...
+    int imageHeight = this->sliders.at(0)->getSlideBarHeight();
+
+    QRangeSlider* first = this->sliders.at(0);
+    QRangeSlider* last = this->sliders.at(this->sliders.size()-1);
+
+    int startX = first->x()+
+                 first->getXPositionBar()+
+                 first->getSliderWidth()/2;
+    int endX = last->x()+
+            last->getXPositionBar()+
+            last->getSliderWidth()/2;
+
+    int imageWidth = endX-startX;
+
+
+    worker.resize(imageWidth, imageHeight);
+
+
+    // Determine positions of dimensions...
     int xPositionSliders[nrOfDimensions];
 
     for (size_t i=0; i<sliders.size(); i++) {
         QRangeSlider* slider = sliders.at(i);
         xPositionSliders[i] = slider->x()+
                               slider->getXPositionBar()+
-                              slider->getSliderWidth()/2;
+                              slider->getSliderWidth()/2 -startX;
 
        // cout << "XPos set is " <<  xPositionSliders[i]  << endl;
     }
 
     worker.setXPositionDimensions(xPositionSliders);
+
+    T minValSliders[nrOfDimensions];
+    T maxValSliders[nrOfDimensions];
+
+    for (size_t i=0; i<sliders.size(); i++) {
+        QRangeSlider* slider = sliders.at(i);
+        minValSliders[i] = slider->getCurrentSetMinVal();
+        maxValSliders[i] = slider->getCurrentSetMaxVal();
+    }
+    worker.setMinMaxValScope(minValSliders, maxValSliders);
+
+    bool minValDisplayedOnTop[nrOfDimensions];
+    for (size_t i=0; i<sliders.size(); i++) {
+        QRangeSlider* slider = sliders.at(i);
+        minValDisplayedOnTop[i] = slider->getMinValDisplayedOnTop();
+    }
+
+    worker.setMinValDisplayedOnTop(minValDisplayedOnTop);
+
     worker.start();
 }
 
