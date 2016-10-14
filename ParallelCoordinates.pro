@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     datastore.cpp \
     qrangesliderobserver.cpp \
     parallelcoordinatesworker.cpp \
-    parallelcoordinatesworkerobserver.cpp
+    parallelcoordinatesworkerobserver.cpp \
+    Perlin.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -31,7 +32,9 @@ HEADERS  += mainwindow.h \
     datastore.h \
     qrangesliderobserver.h \
     parallelcoordinatesworker.h \
-    parallelcoordinatesworkerobserver.h
+    parallelcoordinatesworkerobserver.h \
+    Perlin.h \
+    3DMATH.H
 
 FORMS    += mainwindow.ui
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include "datastore.h"
 #include "datastore.cpp"
+#include "Perlin.h"
 
 using namespace std;
 
@@ -58,18 +59,26 @@ template<class T>
 void View3D<T>::initializeData()
 {
 
-    if (verticesPtr!=NULL) {
-        free(verticesPtr);
+    if (verticesPositionsPtr!=NULL) {
+        free(verticesPositionsPtr);
     }
 
+    if (verticesColorsPtr!=NULL) {
+        free(verticesColorsPtr);
+    }
 
     //  3 Floats for Coordinates  * 2 Points per Triangle Strip
     // *3 (RGB Color Information) * 2 Points
 
-    const size_t space = nrOfPoints*3*2*sizeof(GLfloat);
+    const size_t spaceVerticesPositions = nrOfPoints*3*2*sizeof(GLfloat);
 
-    verticesPtr = (GLfloat*) malloc(space);
-    memset(verticesPtr, 0, space);
+    verticesPositionsPtr = (GLfloat*) malloc(spaceVerticesPositions);
+    memset(verticesPositionsPtr, 0, spaceVerticesPositions);
+
+    const size_t spaceVerticesColors = nrOfPoints * 3 * sizeof(GLfloat);
+
+    verticesColorsPtr = (GLfloat*) malloc(spaceVerticesColors);
+    memset(verticesColorsPtr, 0, spaceVerticesColors);
 
     const int xDist = 5;
     const int yDist = 5;
@@ -78,67 +87,79 @@ void View3D<T>::initializeData()
 
     // vector<DataSet<T>>* data = dataStorePtr->getDataSetPtr();
 
-     this->dataStorePtr->getDataSetPtr();
+    // this->dataStorePtr->getDataSetPtr();
+
+    Perlin perlin;
+
 
     int idx = 0;
     for (int y=0; y<nrOfPointsY; y++)
     for (int x=0; x<nrOfPointsX; x++) {
-        // Coordinates
-        verticesPtr[idx]   = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
-        verticesPtr[idx+1] = ((GLfloat) y*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
-        verticesPtr[idx+2] = 0;
+
 
         // Coordinates
-        verticesPtr[idx+3] = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
-        verticesPtr[idx+4] = ((GLfloat) (y+1)*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
-        verticesPtr[idx+5] = 0;
+        verticesPositionsPtr[idx]   = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPositionsPtr[idx+1] = ((GLfloat) y*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
+        verticesPositionsPtr[idx+2] = perlin.Get2D(x,y)/90000;
+        // cout << perlin.Get2D(x,y) << endl;
+
+        // Coordinates
+        verticesPositionsPtr[idx+3] = ((GLfloat) x*xDist-nrOfPointsX*xDist/2)/(GLfloat)nrOfPointsX;
+        verticesPositionsPtr[idx+4] = ((GLfloat) (y+1)*yDist-nrOfPointsY*yDist/2)/(GLfloat)nrOfPointsY;
+        verticesPositionsPtr[idx+5] = perlin.Get2D(x,(y+1))/90000;;
 
         idx+=6;
     };
 
+    idx = 0;
+    int colorIdx =0;
 
-
-
-    /*
-    verticesPtr[0] = 0.0f;
-    verticesPtr[1] = 1.0f;
-    verticesPtr[2] = 0.0f;
-    verticesPtr[3] = -1.0f;
-    verticesPtr[4] = -1.0f;
-    verticesPtr[5] = 0.0f;
-    verticesPtr[6] = 1.0f;
-    verticesPtr[7] = -1.0f;
-    verticesPtr[8] = 0.0f;
-    */
-
-    //
-    // GLfloat vertices[] = {
-    //          +0.0f, +0.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          +1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          -1.0f, +1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          -1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f,
-    //          +1.0f, -1.0f, 0.0f, /* Color ->*/ 1.0f, 0.0f, 0.0f
-    //       };
-
-
+    // Set Colors for Vertices...
+    for (int y=0; y<nrOfPointsY; y++)
+    for (int x=0; x<nrOfPointsX; x++) {
+        if (colorIdx%3==0) {
+            verticesColorsPtr[idx]   = 1.0f;
+            verticesColorsPtr[idx+1] = 0.0f;
+            verticesColorsPtr[idx+2] = 0;
+        } else if (colorIdx%3==1) {
+            verticesColorsPtr[idx]   = 0;
+            verticesColorsPtr[idx+1] = 1.0f;
+            verticesColorsPtr[idx+2] = 0;
+        } else if (colorIdx%3==2) {
+            verticesColorsPtr[idx]   = 0;
+            verticesColorsPtr[idx+1] = 0;
+            verticesColorsPtr[idx+2] = 1.0f;
+        }
+        colorIdx++;
+        idx+=3;
+    }
 
     // cout << sizeof(vertices) << endl;
     // memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
-    // Create Vertex Buffer...
+    // Create Vertex Position Buffer...
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-    glBufferData(GL_ARRAY_BUFFER, space, verticesPtr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, spaceVerticesPositions, verticesPositionsPtr, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &vertexArrayId);
     glBindVertexArray(vertexArrayId);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, 0);
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
+
+
+    // Create Vertex Color Buffer...
+    glGenBuffers(1, &vertexBufferColorsId);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferColorsId);
+    glBufferData(GL_ARRAY_BUFFER, spaceVerticesColors, verticesColorsPtr, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    m_program->setAttributeBuffer(1,GL_FLOAT, 0, 3, 0);
+
 
     /*
     // Create Index Buffer...
@@ -174,7 +195,7 @@ void View3D<T>::paintGL()
     glBindVertexArray(vertexArrayId);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
     m_program->bind();

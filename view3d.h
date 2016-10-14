@@ -26,12 +26,15 @@ private:
     GLuint indicesArrayId;
 
     GLuint vertexBufferId;
+    GLuint vertexBufferColorsId;
+
     GLuint indicesBufferId;
 
-    const int nrOfPointsX = 300;
-    const int nrOfPointsY = 300;
+    const int nrOfPointsX = 100;
+    const int nrOfPointsY = 100;
     const int nrOfPoints = nrOfPointsX*nrOfPointsY;
-    GLfloat* verticesPtr;
+    GLfloat* verticesPositionsPtr;
+    GLfloat* verticesColorsPtr;
 
     GLuint m_posAttr;
     GLuint m_matrixUniform;
@@ -75,7 +78,7 @@ private:
 
 public:
     View3D(QWidget *parent)
-           : QOpenGLWidget(parent), verticesPtr(NULL) {
+           : QOpenGLWidget(parent), verticesPositionsPtr(NULL), verticesColorsPtr(NULL) {
 
         qtGreen = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
         qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
