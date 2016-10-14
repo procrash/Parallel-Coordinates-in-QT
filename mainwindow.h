@@ -59,6 +59,8 @@ private:
     DataStore<WIDGET_DATA_TYPE> dataStore;
     ParallelCoordinatesWidget<WIDGET_DATA_TYPE>* parallelCoordinatesPtr;
     View3D<WIDGET_DATA_TYPE>* view3dPtr;
+    QTableWidget* tableWidget;
+
     void loadFileData(QString fileName);
 };
 
