@@ -30,14 +30,18 @@ private:
 
     GLuint indicesBufferId;
 
+    GLuint shaderProgramId;
+
     const int nrOfPointsX = 100;
     const int nrOfPointsY = 100;
+
     const int nrOfPoints = nrOfPointsX*nrOfPointsY;
     GLfloat* verticesPositionsPtr;
     GLfloat* verticesColorsPtr;
 
+    GLint matrixUniformId;
+
     GLuint m_posAttr;
-    GLuint m_matrixUniform;
 
     QOpenGLShaderProgram *m_program;
 
@@ -64,6 +68,12 @@ private:
     double xDistance = 0.0f;
     double yDistance = 0.0f;
 
+    // For testing purposes only...
+    static const int resX = 100;
+    static const int resY = 100;
+    int testData[resX*resY];
+
+
     void setXRotation(int angle);
     void setYRotation(int angle);
     void setZRotation(int angle);
@@ -72,15 +82,13 @@ private:
     void setTranslationY(int distance);
 
     QString readStringFromResourceFile(QString filenameIncludingPath);
-    GLuint compileShaders();
+    void printShaderInfoLog(GLuint obj);
+    void printProgramInfoLog(GLuint obj);
 
+    GLuint compileShaders();
 
     void initializeData();
 
-    // For testing purposes only...
-    static const int resX = 100;
-    static const int resY = 100;
-    int testData[resX*resY];
 
 
 

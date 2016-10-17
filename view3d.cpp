@@ -6,6 +6,12 @@
 #include "datastore.h"
 #include "datastore.cpp"
 
+// #include "matrix4x4.h"
+#include "vmath.h"
+
+
+#include <QDebug>
+
 using namespace std;
 
 static void qNormalizeAngle(int &angle)
@@ -29,6 +35,10 @@ QSize View3D<T>::sizeHint() const
     return QSize(600, 600);
 }
 
+
+
+
+
 template<class T>
 QString View3D<T>::readStringFromResourceFile(QString filenameIncludingPath) {
     QString result = "";
@@ -40,7 +50,44 @@ QString View3D<T>::readStringFromResourceFile(QString filenameIncludingPath) {
     //qDebug() << f.size() << in.readAll();
     result = in.readAll();
     f.close();
+    return result;
+}
 
+
+template<class T>
+void View3D<T>::printShaderInfoLog(GLuint obj)
+{
+    int infologLength = 0;
+    int charsWritten  = 0;
+    char *infoLog;
+
+    glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
+
+    if (infologLength > 0)
+    {
+        infoLog = (char *)malloc(infologLength);
+        glGetShaderInfoLog(obj, infologLength, &charsWritten, infoLog);
+        printf("%s\n",infoLog);
+        free(infoLog);
+    }
+}
+
+template<class T>
+void View3D<T>::printProgramInfoLog(GLuint obj)
+{
+    int infologLength = 0;
+    int charsWritten  = 0;
+    char *infoLog;
+
+    glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
+
+    if (infologLength > 0)
+    {
+        infoLog = (char *)malloc(infologLength);
+        glGetProgramInfoLog(obj, infologLength, &charsWritten, infoLog);
+        printf("%s\n",infoLog);
+        free(infoLog);
+    }
 }
 
 
@@ -52,31 +99,52 @@ GLuint View3D<T>::compileShaders() {
     GLuint program_id;
 
 
-    const GLchar *vertexShaderStr   = (const GLchar *) readStringFromResourceFile(":/shaders/vertexShader.glsl").toStdString().c_str();
-    const GLchar *fragmentShaderStr = (const GLchar *) readStringFromResourceFile(":/shaders/fragmentShader.glsl").toStdString().c_str();
+    QString debug = readStringFromResourceFile(":/shaders/vertexShader.glsl");
+
+    string str = debug.toStdString();
+    str = str;
+    debug = debug;
+
+    string vertexShaderStr = readStringFromResourceFile(":/shaders/vertexShader.glsl").toStdString();
+    string fragmentShaderStr = readStringFromResourceFile(":/shaders/fragmentShader.glsl").toStdString();
+
+    const GLchar *vertexShader_cStr   = (const GLchar *) vertexShaderStr.c_str();
+    const GLchar *fragmentShader_cStr = (const GLchar *) fragmentShaderStr.c_str();
+
+    cout << vertexShader_cStr << endl;
 
     // Create Vertex Shader
     vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader_id, 1, &vertexShaderStr, NULL);
+    glShaderSource(vertex_shader_id, 1, &vertexShader_cStr, NULL);
     glCompileShader(vertex_shader_id);
 
     // Create Fragment Shader
     fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader_id, 1, &fragmentShaderStr, NULL);
+    glShaderSource(fragment_shader_id, 1, &fragmentShader_cStr, NULL);
     glCompileShader(fragment_shader_id);
+
+    // Print logs of Shaders
+    printShaderInfoLog(vertex_shader_id);
+    printShaderInfoLog(fragment_shader_id);
 
     // Create Program, attach shaders and link
     program_id = glCreateProgram();
     glAttachShader(program_id, vertex_shader_id);
     glAttachShader(program_id, fragment_shader_id);
+
+    glBindFragDataLocation(program_id, 0, "aColor"); // TODO: check if this is necessary
+
     glLinkProgram(program_id);
+
+    // Print logs of linker
+    printProgramInfoLog(program_id);
 
     // Free resources as the program has now the shaders...
     glDeleteShader(vertex_shader_id);
     glDeleteShader(fragment_shader_id);
 
-    delete(vertexShaderStr);
-    delete(fragmentShaderStr);
+    // delete(vertexShaderStr);
+    // delete(fragmentShaderStr);
 
     return program_id;
 }
@@ -91,6 +159,11 @@ void View3D<T>::initializeGL()
     glShadeModel(GL_SMOOTH);
     glEnable(GL_MULTISAMPLE);
 
+    shaderProgramId = compileShaders();
+    matrixUniformId = glGetUniformLocation(shaderProgramId, "matrix");
+
+
+    /*
     m_program = new QOpenGLShaderProgram(this);
 
     m_program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vertexShader.glsl");
@@ -98,7 +171,7 @@ void View3D<T>::initializeGL()
 
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
-
+    */
 
     initializeData();
 
@@ -201,7 +274,8 @@ void View3D<T>::initializeData()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
+
+   //  m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 0);
 
 
     // Create Vertex Color Buffer...
@@ -210,7 +284,7 @@ void View3D<T>::initializeData()
     glBufferData(GL_ARRAY_BUFFER, spaceVerticesColors, verticesColorsPtr, GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    m_program->setAttributeBuffer(1,GL_FLOAT, 0, 3, 0);
+    // m_program->setAttributeBuffer(1,GL_FLOAT, 0, 3, 0);
 
 
     /*
@@ -249,20 +323,18 @@ void View3D<T>::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    m_program->bind();
+    glUseProgram(shaderProgramId);
 
-    QMatrix4x4 matrix;
 
-    matrix.perspective(60.0f, 1.0f, 0.1f, 100.0f);
-    matrix.translate(0, 0, -2+distance/20);
+    vmath::mat4 matrix = vmath::perspective(60.0f, 1.0f, 0.1f, 100.0f)*
+                         vmath::translate(0.0f,0.0f, -2.0f+distance/20.0f)*
+                         vmath::rotate((float)(xRot/16), 1.0f, 0.0f, 0.0f)*
+                         vmath::rotate((float)(yRot/16), 0.0f, 1.0f, 0.0f)*
+                         vmath::rotate((float)(zRot/16), 0.0f, 0.0f, 1.0f)*
+                         vmath::translate((float)xDistance, (float)yDistance, 0.0f);
 
-    matrix.rotate(xRot / 16.0, 1.0, 0.0, 0.0);
-    matrix.rotate(yRot / 16.0, 0.0, 1.0, 0.0);
-    matrix.rotate(zRot / 16.0, 0.0, 0.0, 1.0);
+    glUniformMatrix4fv(matrixUniformId,1,GL_FALSE, matrix);
 
-    matrix.translate(xDistance, yDistance, 0);
-
-    m_program->setUniformValue(m_matrixUniform, matrix);
 
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
 
@@ -281,8 +353,9 @@ void View3D<T>::paintGL()
     }
     */
 
-    m_program->release();
 
+
+    glUseProgram(0);
     glBindVertexArray(0);
 }
 
