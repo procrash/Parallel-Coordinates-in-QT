@@ -15,10 +15,12 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLContext>
 
+#include <glm/mat4x4.hpp> // glm::mat4
+
 using namespace std;
 
 template<class T>
-class View3D : public QOpenGLWidget
+class View3D: public QOpenGLWidget
 {
 
 private:
@@ -54,7 +56,7 @@ private:
 
     DataStore<T>* dataStorePtr;
 
-    vector<DataSet<WIDGET_DATA_TYPE>>* dataSetPtr = NULL;
+    vector<DataSet<T>>* dataSetPtr = NULL;
 
     int xRot;
     int yRot;
@@ -91,6 +93,7 @@ private:
 
 
 
+    glm::mat4 camera(float Translate, glm::vec2 const & Rotate);
 
 public:
     View3D(QWidget *parent)

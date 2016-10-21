@@ -4,11 +4,26 @@
 #include <string>
 
 #include "datastore.h"
-#include "datastore.cpp"
+// #include "datastore.cpp"
 
 // #include "matrix4x4.h"
 #include "vmath.h"
 
+
+#include <glm/vec3.hpp> // glm::vec3
+#include <glm/vec4.hpp> // glm::vec4
+#include <glm/mat4x4.hpp> // glm::mat4
+#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+
+/*
+
+#include "./3rdParty/glm/glm/vec3.hpp"
+#include "./3rdParty/glm/glm/vec4.hpp"
+#include "./3rdParty/glm/glm/mat4x4.hpp"
+#include "./3rdParty/glm/glm/gtc/matrix_transform.hpp"
+#include "./3rdParty/glm/glm/gtc/type_ptr.hpp"
+*/
 
 #include <QDebug>
 
@@ -34,7 +49,6 @@ QSize View3D<T>::sizeHint() const
 {
     return QSize(600, 600);
 }
-
 
 
 
@@ -142,9 +156,6 @@ GLuint View3D<T>::compileShaders() {
     // Free resources as the program has now the shaders...
     glDeleteShader(vertex_shader_id);
     glDeleteShader(fragment_shader_id);
-
-    // delete(vertexShaderStr);
-    // delete(fragmentShaderStr);
 
     return program_id;
 }
@@ -315,6 +326,17 @@ void View3D<T>::initializeData()
 }
 
 template<class T>
+glm::mat4 View3D<T>::camera(float Translate, glm::vec2 const & Rotate)
+{
+    glm::mat4 Projection = glm::perspective(glm::radians(60.0f), 4.0f / 3.0f, 0.1f, 100.f);
+    glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
+    View = glm::rotate(View, Rotate.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    View = glm::rotate(View, Rotate.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+    return Projection * View * Model;
+}
+
+template<class T>
 void View3D<T>::paintGL()
 {
 
@@ -326,6 +348,10 @@ void View3D<T>::paintGL()
     glUseProgram(shaderProgramId);
 
 
+    float translate = 2.0f+distance/20.0f;
+
+    /*
+
     vmath::mat4 matrix = vmath::perspective(60.0f, 1.0f, 0.1f, 100.0f)*
                          vmath::translate(0.0f,0.0f, -2.0f+distance/20.0f)*
                          vmath::rotate((float)(xRot/16), 1.0f, 0.0f, 0.0f)*
@@ -334,7 +360,11 @@ void View3D<T>::paintGL()
                          vmath::translate((float)xDistance, (float)yDistance, 0.0f);
 
     glUniformMatrix4fv(matrixUniformId,1,GL_FALSE, matrix);
+    */
 
+    glm::mat4 mvp = camera(-2.0f+distance/20.0f, glm::vec2((float)(xRot/16),(float)(yRot/16)));
+
+    glUniformMatrix4fv(matrixUniformId, 1, GL_FALSE,  glm::value_ptr(mvp));
 
     //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
 
@@ -406,12 +436,12 @@ void View3D<T>::setZRotation(int angle)
 }
 
 template<class T>
-void setTranslationX(int distance) {
+void View3D<T>::setTranslationX(int distance) {
 
 }
 
 template<class T>
-void setTranslationY(int distance) {
+void View3D<T>::setTranslationY(int distance) {
 
 }
 
@@ -476,6 +506,8 @@ void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
 
 template<class T>
 void View3D<T>::keyPressEvent(QKeyEvent *keyEvent) {
+    // TODO: Implement keyPress events also in main application
+    // as this works only in fullscreen here!!!
     if (keyEvent->key() == Qt::Key_Escape) {
         if(isFullScreen())
         {

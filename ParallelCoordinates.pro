@@ -43,3 +43,4 @@ DISTFILES += \
 RESOURCES += \
     3dvisualization.qrc
 
+INCLUDEPATH += 3rdParty/glm
