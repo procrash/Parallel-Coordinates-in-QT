@@ -5,7 +5,7 @@
 
 #include <parallelcoordinatesglobals.h>
 #include "datastore.h"
-
+#include "heightmap.h"
 // For testing only
 
 #include <time.h>
@@ -24,6 +24,9 @@ class View3D: public QOpenGLWidget
 {
 
 private:
+
+    HeightMap heightMap;
+
     GLuint vertexArrayId;
     GLuint indicesArrayId;
 

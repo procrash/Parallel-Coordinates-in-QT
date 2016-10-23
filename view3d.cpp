@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cmath>
+#include "heightmap.h"
 
 #include "datastore.h"
 // #include "datastore.cpp"
@@ -323,6 +325,9 @@ void View3D<T>::initializeData()
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
+
+
+
 }
 
 template<class T>
@@ -350,40 +355,19 @@ void View3D<T>::paintGL()
 
     float translate = 2.0f+distance/20.0f;
 
-    /*
 
-    vmath::mat4 matrix = vmath::perspective(60.0f, 1.0f, 0.1f, 100.0f)*
-                         vmath::translate(0.0f,0.0f, -2.0f+distance/20.0f)*
-                         vmath::rotate((float)(xRot/16), 1.0f, 0.0f, 0.0f)*
-                         vmath::rotate((float)(yRot/16), 0.0f, 1.0f, 0.0f)*
-                         vmath::rotate((float)(zRot/16), 0.0f, 0.0f, 1.0f)*
-                         vmath::translate((float)xDistance, (float)yDistance, 0.0f);
-
-    glUniformMatrix4fv(matrixUniformId,1,GL_FALSE, matrix);
-    */
-
-    glm::mat4 mvp = camera(-2.0f+distance/20.0f, glm::vec2((float)(xRot/16),(float)(yRot/16)));
-
+    glm::mat4 mvp = camera(translate, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180)); //glm::vec2((float)(xRot),(float)(yRot)));
     glUniformMatrix4fv(matrixUniformId, 1, GL_FALSE,  glm::value_ptr(mvp));
 
-    //glDrawArrays(GL_TRIANGLE_STRIP, 0, 500);
-
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
-//    glDrawArrays(GL_POINTS, 0,3);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
 
     for (int i=0; i<nrOfPointsY;i++) {
         glDrawArrays(GL_TRIANGLE_STRIP, i*nrOfPointsX, i*nrOfPointsX+nrOfPointsX);
     }
 
-    /*
-    for (int i=0; i<nrOfDimensions; i++) {
-        glDrawArrays(GL_POINT, 0, );
-    }
-    */
 
 
+    heightMap.render();
 
     glUseProgram(0);
     glBindVertexArray(0);

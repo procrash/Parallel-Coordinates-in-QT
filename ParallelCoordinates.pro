@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     datastore.cpp \
     qrangesliderobserver.cpp \
     parallelcoordinatesworker.cpp \
-    parallelcoordinatesworkerobserver.cpp
+    parallelcoordinatesworkerobserver.cpp \
+    heightmap.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -32,13 +33,15 @@ HEADERS  += mainwindow.h \
     qrangesliderobserver.h \
     parallelcoordinatesworker.h \
     parallelcoordinatesworkerobserver.h \
-    vmath.h
+    vmath.h \
+    heightmap.h
 
 FORMS    += mainwindow.ui
 
 DISTFILES += \
     3dVisualization/fragmentShader.glsl \
-    3dVisualization/vertexShader.glsl
+    3dVisualization/vertexShader.glsl \
+    heightmap.jpg
 
 RESOURCES += \
     3dvisualization.qrc

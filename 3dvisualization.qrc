@@ -3,4 +3,7 @@
         <file>fragmentShader.glsl</file>
         <file>vertexShader.glsl</file>
     </qresource>
+    <qresource prefix="/images">
+        <file>heightmap.jpg</file>
+    </qresource>
 </RCC>
