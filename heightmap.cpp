@@ -173,8 +173,16 @@ void HeightMap::createBuffers() {
             //data.insert(data.end(), (BYTE*)&vCoordsData[i][j], (BYTE*)&vCoordsData[i][j]+sizeof(glm::vec2));
             // data.insert(data.end(), (BYTE*)&vFinalNormals[i][j], (BYTE*)&vFinalNormals[i][j]+sizeof(glm::vec3));
 
+            /*
+            cout << vVertexData[i][j].x << " "
+                 << vVertexData[i][j].y << " "
+                 << vVertexData[i][j].z << endl;
+            */
+
        }
     }
+
+   // cout << "Data size is:" << data.size() << endl;
 
     glGenBuffers(1, &vboIndexData);
     for (int i=0; i<iRows;i++)
@@ -210,8 +218,13 @@ void HeightMap::createBuffers() {
 
 void HeightMap::render() {
     glBindVertexArray(uiVAO);
+
+   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexData);
+
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(iRows*iCols);
     int iNumIndices = (iRows-1)*iCols*2 + iRows-1;
+    //cout << "Num:" << iNumIndices << endl;
     glDrawElements(GL_TRIANGLE_STRIP, iNumIndices, GL_UNSIGNED_INT, 0);
+
 }

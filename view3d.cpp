@@ -29,6 +29,7 @@
 
 #include <QDebug>
 
+
 using namespace std;
 
 static void qNormalizeAngle(int &angle)
@@ -360,11 +361,20 @@ void View3D<T>::paintGL()
     glUniformMatrix4fv(matrixUniformId, 1, GL_FALSE,  glm::value_ptr(mvp));
 
 
-
+    /*
     for (int i=0; i<nrOfPointsY;i++) {
         glDrawArrays(GL_TRIANGLE_STRIP, i*nrOfPointsX, i*nrOfPointsX+nrOfPointsX);
     }
+    */
 
+
+    /*
+    unsigned int pData[3][1][1];
+    pData[0][0][0]=255;
+    pData[1][0][0]=0;
+    pData[2][0][0]=0;
+    glDrawPixels(1, 1, GL_RGB, GL_UNSIGNED_INT, &pData[0][0]);
+    */
 
 
     heightMap.render();
