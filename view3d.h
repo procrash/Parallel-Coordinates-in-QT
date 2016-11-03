@@ -13,7 +13,7 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
-#include <QOpenGLContext>
+// #include <QOpenGLContext>
 
 #include <glm/mat4x4.hpp> // glm::mat4
 

@@ -116,19 +116,15 @@ GLuint View3D<T>::compileShaders() {
     GLuint program_id;
 
 
-    QString debug = readStringFromResourceFile(":/shaders/vertexShader.glsl");
-
-    string str = debug.toStdString();
-    str = str;
-    debug = debug;
-
     string vertexShaderStr = readStringFromResourceFile(":/shaders/vertexShader.glsl").toStdString();
     string fragmentShaderStr = readStringFromResourceFile(":/shaders/fragmentShader.glsl").toStdString();
 
     const GLchar *vertexShader_cStr   = (const GLchar *) vertexShaderStr.c_str();
     const GLchar *fragmentShader_cStr = (const GLchar *) fragmentShaderStr.c_str();
 
-    cout << vertexShader_cStr << endl;
+
+
+    // cout << vertexShader_cStr << endl;
 
     // Create Vertex Shader
     vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
@@ -189,10 +185,15 @@ void View3D<T>::initializeGL()
 
     initializeData();
 
+
+
    // m_program->release();
 
 //    glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
 
+
+    // Now initialize other OpenGL dependent Classes
+    heightMap.initialize();
 }
 
 template<class T>
@@ -277,6 +278,7 @@ void View3D<T>::initializeData()
     // memcpy(verticesPtr, vertices, sizeof(vertices));
 
 
+
     // Create Vertex Position Buffer...
     glGenBuffers(1, &vertexBufferId);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
@@ -293,39 +295,37 @@ void View3D<T>::initializeData()
 
 
     // Create Vertex Color Buffer...
-    glGenBuffers(1, &vertexBufferColorsId);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferColorsId);
-    glBufferData(GL_ARRAY_BUFFER, spaceVerticesColors, verticesColorsPtr, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    // glGenBuffers(1, &vertexBufferColorsId);
+    // glBindBuffer(GL_ARRAY_BUFFER, vertexBufferColorsId);
+    // glBufferData(GL_ARRAY_BUFFER, spaceVerticesColors, verticesColorsPtr, GL_STATIC_DRAW);
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     // m_program->setAttributeBuffer(1,GL_FLOAT, 0, 3, 0);
 
 
-    /*
     // Create Index Buffer...
-    GLushort indices[] = { 0,1,2, 0,3,4 };
-    glGenBuffers(1, &indicesBufferId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    */
+    // GLushort indices[] = { 0,1,2, 0,3,4 };
+    // glGenBuffers(1, &indicesBufferId);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferId);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 
     // glEnableVertexAttribArray(1);
 
 
-    /*
-    glEnableVertexAttribArray(0);
-    m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 6);
 
-    glEnableVertexAttribArray(1);
-    m_program->setAttributeBuffer(1,GL_FLOAT, 3, 3, 6);
+    // glEnableVertexAttribArray(0);
+    // m_program->setAttributeBuffer(0,GL_FLOAT, 0, 3, 6);
 
-    */
+    // glEnableVertexAttribArray(1);
+    // m_program->setAttributeBuffer(1,GL_FLOAT, 3, 3, 6);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glPointSize(5);
+
+    // glEnable(GL_PROGRAM_POINT_SIZE);
+    // glPointSize(5);
 
 
 
@@ -345,6 +345,12 @@ glm::mat4 View3D<T>::camera(float Translate, glm::vec2 const & Rotate)
 template<class T>
 void View3D<T>::paintGL()
 {
+    // Determine Model View Matrix...
+    float translate = 2.0f+distance/20.0f;
+    glm::mat4 mvp = camera(translate, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180));
+    heightMap.setModelViewMatrix(mvp);
+
+    /*
 
     glBindVertexArray(vertexArrayId);
 
@@ -353,34 +359,26 @@ void View3D<T>::paintGL()
 
     glUseProgram(shaderProgramId);
 
-
-    float translate = 2.0f+distance/20.0f;
-
-
-    glm::mat4 mvp = camera(translate, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180)); //glm::vec2((float)(xRot),(float)(yRot)));
     glUniformMatrix4fv(matrixUniformId, 1, GL_FALSE,  glm::value_ptr(mvp));
 
 
-    /*
+
+
     for (int i=0; i<nrOfPointsY;i++) {
         glDrawArrays(GL_TRIANGLE_STRIP, i*nrOfPointsX, i*nrOfPointsX+nrOfPointsX);
     }
-    */
+
+    // glDrawArrays(GL_POINTS, 0, 1);
 
 
-    /*
-    unsigned int pData[3][1][1];
-    pData[0][0][0]=255;
-    pData[1][0][0]=0;
-    pData[2][0][0]=0;
-    glDrawPixels(1, 1, GL_RGB, GL_UNSIGNED_INT, &pData[0][0]);
-    */
-
-
-    heightMap.render();
 
     glUseProgram(0);
     glBindVertexArray(0);
+    */
+
+     heightMap.render();
+
+
 }
 
 
@@ -388,13 +386,14 @@ template<class T>
 void View3D<T>::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
-    glViewport((width - side) / 2, (height - side) / 2, side, side);
+    // glViewport((width - side) / 2, (height - side) / 2, side, side);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    // glMatrixMode(GL_PROJECTION);
+    // glLoadIdentity();
 
-    glOrtho(minX, maxX, minY, maxY, minZ, maxZ);
-    glMatrixMode(GL_MODELVIEW);
+    // glOrtho(minX, maxX, minY, maxY, minZ, maxZ);
+    // glMatrixMode(GL_MODELVIEW);
+
 
 }
 

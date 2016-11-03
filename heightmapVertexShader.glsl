@@ -7,7 +7,6 @@ uniform highp mat4 matrix;
 void main() {
 
     gl_Position = matrix * vec4(posAttr.xyz, 1.0);
-   // gl_Position = matrix * vec4(0,0,0,1);
 
     // color = colorAttr;
 }

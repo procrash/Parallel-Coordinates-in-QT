@@ -2,8 +2,11 @@
     <qresource prefix="/shaders">
         <file>fragmentShader.glsl</file>
         <file>vertexShader.glsl</file>
+        <file>heightmapFragmentShader.glsl</file>
+        <file>heightmapVertexShader.glsl</file>
     </qresource>
     <qresource prefix="/images">
         <file>heightmap.jpg</file>
+        <file>Black.png</file>
     </qresource>
 </RCC>

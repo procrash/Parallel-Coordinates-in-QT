@@ -6,6 +6,7 @@
 
 #include <glm/vec3.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 /*
 #include "3rdParty/glm/glm/vec3.hpp"
@@ -15,7 +16,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLContext>
-
+#include <QFile>
+#include <QTextStream>
 
 #include <vector>
 
@@ -23,29 +25,136 @@ using namespace std;
 
 HeightMap::HeightMap()
 {
+
+
+}
+
+// To make sure we call OpenGL Functions AFTER the OpenGL Context has been created...
+void HeightMap::initialize() {
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glPointSize(5);
+
+    this->shaderProgramId = compileShaders();
+    matrixUniformId = glGetUniformLocation(shaderProgramId, "matrix");
+
+
     loadVertexData();
     calculateTriangleNormals();
     createBuffers();
+}
+
+void HeightMap::setModelViewMatrix(glm::mat4 matrix) {
+    this->modelViewMatrix = matrix;
+}
+
+QString HeightMap::readStringFromResourceFile(QString filenameIncludingPath) {
+    QString result = "";
+
+    QFile f(filenameIncludingPath);
+    if (!f.open(QFile::ReadOnly | QFile::Text)) { return result; }
+
+    QTextStream in(&f);
+    //qDebug() << f.size() << in.readAll();
+    result = in.readAll();
+    f.close();
+    return result;
+}
+
+
+void HeightMap::printShaderInfoLog(GLuint obj)
+{
+    int infologLength = 0;
+    int charsWritten  = 0;
+    char *infoLog;
+
+    glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
+
+    if (infologLength > 0)
+    {
+        infoLog = (char *)malloc(infologLength);
+        glGetShaderInfoLog(obj, infologLength, &charsWritten, infoLog);
+        printf("%s\n",infoLog);
+        free(infoLog);
+    }
+}
+
+void HeightMap::printProgramInfoLog(GLuint obj)
+{
+    int infologLength = 0;
+    int charsWritten  = 0;
+    char *infoLog;
+
+    glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&infologLength);
+
+    if (infologLength > 0)
+    {
+        infoLog = (char *)malloc(infologLength);
+        glGetProgramInfoLog(obj, infologLength, &charsWritten, infoLog);
+        printf("%s\n",infoLog);
+        free(infoLog);
+    }
+}
+
+GLuint HeightMap::compileShaders() {
+
+    cout << "Compiling Heightmap Shaders" << endl;
+
+    GLuint program_id;
+
+    string heightmapVertexShaderStr = readStringFromResourceFile(":/shaders/heightmapVertexShader.glsl").toStdString();
+    string heightmapFragmentShaderStr = readStringFromResourceFile(":/shaders/heightmapFragmentShader.glsl").toStdString();
+
+    const GLchar *heightmapVertexShader_cStr   = (const GLchar *) heightmapVertexShaderStr.c_str();
+    const GLchar *heightmapFragmentShader_cStr = (const GLchar *) heightmapFragmentShaderStr.c_str();
+
+
+    // Create Heightmap Vertex Shader
+    GLuint heightmapVertexShaderId = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(heightmapVertexShaderId, 1, &heightmapVertexShader_cStr, NULL);
+    glCompileShader(heightmapVertexShaderId);
+
+    // Create Heightmap Fragment Shader
+    GLuint heightmapFragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(heightmapFragmentShaderId, 1, &heightmapFragmentShader_cStr, NULL);
+    glCompileShader(heightmapFragmentShaderId);
+
+    // Print logs of Shaders
+    printShaderInfoLog(heightmapVertexShaderId);
+    printShaderInfoLog(heightmapFragmentShaderId);
+
+    // Create Program, attach shaders and link
+    program_id = glCreateProgram();
+
+    // Attach the shaders to the program...
+    glAttachShader(program_id, heightmapVertexShaderId);
+    glAttachShader(program_id, heightmapFragmentShaderId);
+
+//    glBindFragDataLocation(program_id, 0, "aColor"); // TODO: check if this is necessary
+    glLinkProgram(program_id);
+
+    // Print logs of linker
+    printProgramInfoLog(program_id);
+
+    // Free resources as the program has now the shaders...
+    glDeleteShader(heightmapVertexShaderId);
+    glDeleteShader(heightmapFragmentShaderId);
+
+
+    return program_id;
 }
 
 void HeightMap::loadVertexData() {
 
     cout << "Loading Vertex Data" << endl;
 
-    QImage img(":/images/heightmap.jpg");
+//    QImage img(":/images/heightmap.jpg");
+    QImage img(":/images/Black.png");
 
     iRows = img.height();
     iCols = img.width();
 
+    vVertexData = vector< vector< glm::vec3>>(iRows, vector<glm::vec3>(iCols));
 
-
-    vVertexData1D = new glm::vec3[iRows+1*iCols+1];// (glm::vec3**) malloc(sizeof(glm::vec3)*(iRows+2)*(iCols+2));
-
-    vVertexData = (glm::vec3**) new glm::vec3[iCols+1];
-
-    for (int i=0; i<iCols+1; i++) {
-        vVertexData[i] = &vVertexData1D[0]+sizeof(glm::vec3)*(iRows+1);
-    }
 
     for ( int row = 0; row < iRows ; ++row ) {
         for ( int col = 0; col < iCols; ++col )
@@ -63,11 +172,13 @@ void HeightMap::loadVertexData() {
             float fScaleC = float(col)/float(iCols-1);
             float fScaleR = float(row)/float(iRows-1);
 
+            // cout << "Init:" << fScaleC << " " << fScaleR << endl;
             glm::vec3 pixel = glm::vec3(-0.5f+fScaleC,level/255.0f, -0.5f+fScaleR);
 
 
             // cout << "Row:" << row << " Col:" << col << endl;
             vVertexData[row][col] = pixel;
+
 
             /*
             std::cout << "Pixel at [" << row << "," << col << "] contains color ("
@@ -79,12 +190,20 @@ void HeightMap::loadVertexData() {
             */
         }
    }
+
+    /*
+    for ( int row = 0; row < iRows ; ++row ) {
+        for ( int col = 0; col < iCols; ++col )
+        {
+             vVertexData[row][col]  *=100;
+        }
+    }*/
+
 }
 
 void HeightMap::calculateTriangleNormals() {
 
     cout << "Calculating Triangle Normals" << endl;
-
 
     // Calculate triangle normals
     vector< vector<glm::vec3> > vNormals[2];
@@ -98,15 +217,17 @@ void HeightMap::calculateTriangleNormals() {
         {
            glm::vec3 vTriangle0[] =
            {
-              vVertexData[i][j],
-              vVertexData[i+1][j],
-              vVertexData[i+1][j+1]
+              // Lower left Triangle
+              vVertexData[i][j],       //   i,j
+              vVertexData[i+1][j],     //
+              vVertexData[i+1][j+1]    //   i+1,j     i+1, j+1
            };
            glm::vec3 vTriangle1[] =
            {
-              vVertexData[i+1][j+1],
-              vVertexData[i][j+1],
-              vVertexData[i][j]
+              // Upper Right Triangle
+              vVertexData[i+1][j+1], //    i,j    i, j+1
+              vVertexData[i][j+1],   //
+              vVertexData[i][j]      //          i+1, j+1
            };
 
            glm::vec3 vTriangleNorm0 = glm::cross(vTriangle0[0]-vTriangle0[1], vTriangle0[1]-vTriangle0[2]);
@@ -114,6 +235,7 @@ void HeightMap::calculateTriangleNormals() {
 
            vNormals[0][i][j] = glm::normalize(vTriangleNorm0);
            vNormals[1][i][j] = glm::normalize(vTriangleNorm1);
+
         }
      }
 
@@ -121,7 +243,6 @@ void HeightMap::calculateTriangleNormals() {
 
      // Calculate Vertex normals
      this->vFinalNormals = vector< vector<glm::vec3> >(iRows, vector<glm::vec3>(iCols));;
-//     vector< vector<glm::vec3> > vFinalNormals = vector< vector<glm::vec3> >(iRows, vector<glm::vec3>(iCols));
 
        for (int i=0; i<iRows; i++) {
           for (int j=0; j<iCols; j++)
@@ -149,11 +270,13 @@ void HeightMap::calculateTriangleNormals() {
        }
 
        cout << "Finished" << endl;
-
 }
 
 void HeightMap::createBuffers() {
-    cout << "Crating Buffers" << endl;
+
+
+    cout << "Creating Buffers" << endl;
+
 
     // First, create a VBO with only vertex data
 
@@ -167,24 +290,17 @@ void HeightMap::createBuffers() {
     {
        for (int j=0; j<iCols; j++)
        {
-//           cout << "3 Rows:" << iRows << " Cols:" << iCols << endl;
-
             data.insert(data.end(), (BYTE*)&vVertexData[i][j], (BYTE*)&vVertexData[i][j]+sizeof(glm::vec3));
-            //data.insert(data.end(), (BYTE*)&vCoordsData[i][j], (BYTE*)&vCoordsData[i][j]+sizeof(glm::vec2));
-            // data.insert(data.end(), (BYTE*)&vFinalNormals[i][j], (BYTE*)&vFinalNormals[i][j]+sizeof(glm::vec3));
-
-            /*
-            cout << vVertexData[i][j].x << " "
-                 << vVertexData[i][j].y << " "
-                 << vVertexData[i][j].z << endl;
-            */
-
        }
     }
 
-   // cout << "Data size is:" << data.size() << endl;
+    GLuint primitiveRestartIndex = iRows*iCols;
 
+    int debug = 0;
     glGenBuffers(1, &vboIndexData);
+
+
+
     for (int i=0; i<iRows;i++)
     {
        for (int j=0; j<iCols; j++)
@@ -192,13 +308,21 @@ void HeightMap::createBuffers() {
            for (int k=0; k<2; k++) {
                 int iRow = i+(1-k);
                 GLuint iIndex = iRow*iCols+j;
-                indices.insert(indices.end(), iIndex);
+                //indices.insert(indices.end(), iIndex);
+                //indices.insert(indices.end(), iIndex);
+                indices.insert(indices.end(), (BYTE*) &iIndex, ((BYTE*) &iIndex)+sizeof(GLuint));
+                //if (debug++<10) cout << (int)indices.at(debug-1) << " ";
            }
            // Restart triangle strips...
-           indices.insert(indices.end(), iRows*iCols);
        }
+//       indices.insert(indices.end(), primitiveRestartIndex);
+       indices.insert(indices.end(), (BYTE*) &primitiveRestartIndex, ((BYTE*) &primitiveRestartIndex)+sizeof(GLuint));
     }
 
+    cout << "Indices are:" << endl;
+    for (int i=0; i<10; i++) {
+        cout << indices[i] << " ";
+    }
     glGenVertexArrays(1, &uiVAO);
     glBindVertexArray(uiVAO);
 
@@ -211,20 +335,88 @@ void HeightMap::createBuffers() {
 
     // Upload Indices data to GPU
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexData);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size(), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
+
+
+
+    /*
+    GLfloat debug[] = {
+//         0.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        +0.5f, -0.5f, 0.0f,
+         0.0f, 0.5f, 0
+    };
+
+    glGenBuffers(1, &vboVerticesData);
+    glBindBuffer(GL_ARRAY_BUFFER, vboVerticesData);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9, debug, GL_STATIC_DRAW);
+
+
+    glGenVertexArrays(1, &uiVAO);
+    glBindVertexArray(uiVAO);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    */
+
 
 
 }
 
+
+void HeightMap::printOpenGLErrors() {
+
+    GLenum error;
+
+    do {
+        error = glGetError();
+        switch (error) {
+         case GL_INVALID_ENUM : cout << "An unacceptable value is specified for an enumerated argument. The offending command is ignored and has no other side effect than to set the error flag." << endl; break;
+         case GL_INVALID_VALUE : cout << "A numeric argument is out of range. The offending command is ignored and has no other side effect than to set the error flag." << endl; break;
+         case GL_INVALID_OPERATION : cout << "The specified operation is not allowed in the current state. The offending command is ignored and has no other side effect than to set the error flag." << endl; break;
+         case GL_INVALID_FRAMEBUFFER_OPERATION: cout << "The framebuffer object is not complete. The offending command is ignored and has no other side effect than to set the error flag." << endl; break;
+         case GL_OUT_OF_MEMORY: cout << "There is not enough memory left to execute the command. The state of the GL is undefined, except for the state of the error flags, after this error is recorded." << endl; break;
+         case GL_STACK_UNDERFLOW: cout << "An attempt has been made to perform an operation that would cause an internal stack to underflow." << endl; break;
+         case GL_STACK_OVERFLOW : cout << "An attempt has been made to perform an operation that would cause an internal stack to overflow." << endl; break;
+        }
+    }
+    while (error!=GL_NO_ERROR);
+
+   // assert(glGetError()==GL_NO_ERROR);
+}
+
 void HeightMap::render() {
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glBindVertexArray(uiVAO);
+    glUseProgram(this->shaderProgramId);
+
+    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glUniformMatrix4fv(this->matrixUniformId, 1, GL_FALSE,  glm::value_ptr(modelViewMatrix));
+
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(iRows*iCols);
+
+    // glDrawArrays(GL_POINTS, 0, iRows*iCols);
+
+    int iNumIndices = (iRows-1)*iCols*2 + iRows-1;
+
+    glDrawElements(GL_TRIANGLE_STRIP, iNumIndices, GL_UNSIGNED_INT, 0);
+
+    glUseProgram(0);
+    glBindVertexArray(0);
+
+
+    /*
     glBindVertexArray(uiVAO);
 
    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexData);
 
-    glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(iRows*iCols);
-    int iNumIndices = (iRows-1)*iCols*2 + iRows-1;
+
+
     //cout << "Num:" << iNumIndices << endl;
     glDrawElements(GL_TRIANGLE_STRIP, iNumIndices, GL_UNSIGNED_INT, 0);
+    */
 
 }
