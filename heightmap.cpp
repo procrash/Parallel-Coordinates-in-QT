@@ -147,8 +147,8 @@ void HeightMap::loadVertexData() {
 
     cout << "Loading Vertex Data" << endl;
 
-//    QImage img(":/images/heightmap.jpg");
-    QImage img(":/images/Black.png");
+    QImage img(":/images/heightmap.jpg");
+//    QImage img(":/images/Black.png");
 
     iRows = img.height();
     iCols = img.width();
@@ -161,12 +161,13 @@ void HeightMap::loadVertexData() {
         {
             QColor clrCurrent( img.pixel( row, col ) );
 
-            float red = clrCurrent.redF();
-            float green = clrCurrent.greenF();
-            float blue = clrCurrent.blueF();
+            float red = clrCurrent.red(); //.redF();
+            float green = clrCurrent.green(); //.greenF();
+            float blue = clrCurrent.blue(); // .blueF();
 
 //            float level = 0.299 * red + 0.587 * green + 0.114 * blue;
-            float level = (red + green + blue)/(255.0f*3);
+            float level = (red + green + blue)/3; //(255.0f*3);
+            cout << "Level: " << level << endl;
             if (level>255.0f) level=255.0f;
 
             float fScaleC = float(col)/float(iCols-1);
@@ -308,21 +309,13 @@ void HeightMap::createBuffers() {
            for (int k=0; k<2; k++) {
                 int iRow = i+(1-k);
                 GLuint iIndex = iRow*iCols+j;
-                //indices.insert(indices.end(), iIndex);
-                //indices.insert(indices.end(), iIndex);
                 indices.insert(indices.end(), (BYTE*) &iIndex, ((BYTE*) &iIndex)+sizeof(GLuint));
-                //if (debug++<10) cout << (int)indices.at(debug-1) << " ";
            }
-           // Restart triangle strips...
        }
-//       indices.insert(indices.end(), primitiveRestartIndex);
+       // Restart triangle strips...
        indices.insert(indices.end(), (BYTE*) &primitiveRestartIndex, ((BYTE*) &primitiveRestartIndex)+sizeof(GLuint));
     }
 
-    cout << "Indices are:" << endl;
-    for (int i=0; i<10; i++) {
-        cout << indices[i] << " ";
-    }
     glGenVertexArrays(1, &uiVAO);
     glBindVertexArray(uiVAO);
 
@@ -336,30 +329,6 @@ void HeightMap::createBuffers() {
     // Upload Indices data to GPU
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexData);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
-
-
-    /*
-    GLfloat debug[] = {
-//         0.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        +0.5f, -0.5f, 0.0f,
-         0.0f, 0.5f, 0
-    };
-
-    glGenBuffers(1, &vboVerticesData);
-    glBindBuffer(GL_ARRAY_BUFFER, vboVerticesData);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*9, debug, GL_STATIC_DRAW);
-
-
-    glGenVertexArrays(1, &uiVAO);
-    glBindVertexArray(uiVAO);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    */
-
-
 
 }
 
