@@ -11,6 +11,7 @@
 #include <QOpenGLContext>
 #include <QString>
 
+#include "texture.h"
 #define BYTE unsigned char
 using namespace std;
 
@@ -18,6 +19,7 @@ class HeightMap
 {
 private:
 
+    Texture heightMapTexture;
 
     bool initialized = false;
 
@@ -45,7 +47,8 @@ private:
 
 //    glm::vec3** vVertexData;
 
-    vector< vector< glm::vec3> > vVertexData;
+    vector<vector<glm::vec3>> vVertexData;
+    vector<vector<glm::vec2>> vCoordsData;
 
     vector<vector<glm::vec3>> vFinalNormals;
 
@@ -53,6 +56,7 @@ private:
     void printShaderInfoLog(GLuint obj);
     void printProgramInfoLog(GLuint obj);
 
+    void loadTextures();
     void loadVertexData();
     void calculateTriangleNormals();
     void createBuffers();

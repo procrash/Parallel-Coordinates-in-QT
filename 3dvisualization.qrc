@@ -8,5 +8,7 @@
     <qresource prefix="/images">
         <file>heightmap.jpg</file>
         <file>Black.png</file>
+        <file>StoneTexture.jpg</file>
+        <file>snow.jpg</file>
     </qresource>
 </RCC>

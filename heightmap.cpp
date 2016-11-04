@@ -42,13 +42,26 @@ void HeightMap::initialize() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
 
+    // Enable Textures...
+    glEnable(GL_TEXTURE_2D);
+
+    // glLineWidth(5);
+
     this->shaderProgramId = compileShaders();
     matrixUniformId = glGetUniformLocation(shaderProgramId, "matrix");
 
 
+    loadTextures();
+
     loadVertexData();
     calculateTriangleNormals();
     createBuffers();
+}
+
+void HeightMap::loadTextures() {
+    heightMapTexture.load(":/images/StoneTexture.jpg");
+    // heightMapTexture.load(":/images/snow.jpg");
+    heightMapTexture.setFiltering(TEXTURE_FILTER_MAG_BILINEAR, TEXTURE_FILTER_MIN_TRILINEAR);
 }
 
 void HeightMap::setModelViewMatrix(glm::mat4 matrix) {
@@ -161,8 +174,11 @@ void HeightMap::loadVertexData() {
     iRows = img.height();
     iCols = img.width();
 
-    vVertexData = vector< vector< glm::vec3>>(iRows, vector<glm::vec3>(iCols));
+    float fTextureU = float(iCols)*0.1f;
+    float fTextureV = float(iRows)*0.1f;
 
+    vVertexData = vector<vector<glm::vec3>>(iRows, vector<glm::vec3>(iCols));
+    vCoordsData = vector<vector<glm::vec2>> (iRows, vector<glm::vec2>(iCols));
 
     for ( int row = 0; row < iRows ; ++row ) {
         for ( int col = 0; col < iCols; ++col )
@@ -187,7 +203,7 @@ void HeightMap::loadVertexData() {
 
             // cout << "Row:" << row << " Col:" << col << endl;
             vVertexData[row][col] = pixel;
-
+            vCoordsData[row][col] = glm::vec2(fTextureU*fScaleC, fTextureV*fScaleR);
 
             /*
             std::cout << "Pixel at [" << row << "," << col << "] contains color ("
@@ -303,6 +319,8 @@ void HeightMap::createBuffers() {
        for (int j=0; j<iCols; j++)
        {
             data.insert(data.end(), (BYTE*)&vVertexData[i][j], (BYTE*)&vVertexData[i][j]+sizeof(glm::vec3));
+            data.insert(data.end(), (BYTE*)&vCoordsData[i][j], (BYTE*)&vCoordsData[i][j]+sizeof(glm::vec2));
+            data.insert(data.end(), (BYTE*)&vFinalNormals[i][j], (BYTE*)&vFinalNormals[i][j]+sizeof(glm::vec3));
        }
     }
 
@@ -334,8 +352,18 @@ void HeightMap::createBuffers() {
     glBindBuffer(GL_ARRAY_BUFFER, vboVerticesData);
     glBufferData(GL_ARRAY_BUFFER, data.size(), &data[0], GL_STATIC_DRAW);
 
+    // Vertex Coordinates...
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 1*sizeof(glm::vec3), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3)+1*sizeof(glm::vec2), 0);
+
+    // Texture  Coordinates...
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3)+1*sizeof(glm::vec2), (void*)sizeof(glm::vec3));
+
+    // Normal Vectors...
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 2*sizeof(glm::vec3)+1*sizeof(glm::vec2), (void*)(sizeof(glm::vec3)+sizeof(glm::vec2)));
+
 
     // Upload Indices data to GPU
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexData);
@@ -367,7 +395,7 @@ void HeightMap::printOpenGLErrors() {
 
 void HeightMap::render() {
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glBindVertexArray(uiVAO);
     glUseProgram(this->shaderProgramId);
@@ -377,6 +405,10 @@ void HeightMap::render() {
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(iRows*iCols);
+
+    int iSamplerLoc = glGetUniformLocation(shaderProgramId, "gSampler");
+    glUniform1i(iSamplerLoc, 0);
+    heightMapTexture.bindTexture(0);
 
     // glDrawArrays(GL_POINTS, 0, iRows*iCols);
 

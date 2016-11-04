@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     qrangesliderobserver.cpp \
     parallelcoordinatesworker.cpp \
     parallelcoordinatesworkerobserver.cpp \
-    heightmap.cpp
+    heightmap.cpp \
+    texture.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h \
     parallelcoordinatesworker.h \
     parallelcoordinatesworkerobserver.h \
     vmath.h \
-    heightmap.h
+    heightmap.h \
+    texture.h
 
 FORMS    += mainwindow.ui
 
