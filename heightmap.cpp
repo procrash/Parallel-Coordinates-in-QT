@@ -31,6 +31,14 @@ HeightMap::HeightMap()
 
 // To make sure we call OpenGL Functions AFTER the OpenGL Context has been created...
 void HeightMap::initialize() {
+//    if (initialized)  return;
+    if (initialized) {
+        glDeleteBuffers(1, &vboVerticesData);
+        glDeleteBuffers(1, &vboVerticesData);
+    }
+
+    initialized = true;
+
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
 
@@ -167,7 +175,7 @@ void HeightMap::loadVertexData() {
 
 //            float level = 0.299 * red + 0.587 * green + 0.114 * blue;
             float level = (red + green + blue)/3; //(255.0f*3);
-            cout << "Level: " << level << endl;
+
             if (level>255.0f) level=255.0f;
 
             float fScaleC = float(col)/float(iCols-1);
@@ -275,6 +283,9 @@ void HeightMap::calculateTriangleNormals() {
 
 void HeightMap::createBuffers() {
 
+
+    data.clear();
+    indices.clear();
 
     cout << "Creating Buffers" << endl;
 

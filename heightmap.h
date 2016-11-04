@@ -19,6 +19,7 @@ class HeightMap
 private:
 
 
+    bool initialized = false;
 
     GLuint shaderProgramId;
 
