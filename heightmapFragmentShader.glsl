@@ -10,11 +10,19 @@ out vec4 aColor;
 
 uniform sampler2D gSampler;
 
-void main() {
-    //aColor = vec4(color, 1.0);
-    aColor = texture2D(gSampler, textureCoord);
-//    aColor = texture2D(gSampler, vec2(10.0, 10.0));
+struct SimpleDirectionalLight
+{
+   vec3 vColor;
+   vec3 vDirection;
+   float fAmbientIntensity;
+};
 
-    // aColor += vec4(normals, 0);
-     //aColor = vec4(color, 1.0); //vec4(1.0, 0.0, 0.0, 1.0);
+uniform SimpleDirectionalLight sunLight;
+
+void main() {
+    vec4 textureColor = texture2D(gSampler, textureCoord);
+    vec4 vColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+    float fDiffuseIntensity = max(0.0, dot(normalize(normals), -sunLight.vDirection));
+    aColor = textureColor*vColor*vec4(sunLight.vColor*(sunLight.fAmbientIntensity+fDiffuseIntensity), 1.0);
 }

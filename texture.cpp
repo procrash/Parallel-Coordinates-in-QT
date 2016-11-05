@@ -23,7 +23,6 @@ void Texture::load(QString path) {
     int height = img.height();
     int bpp = img.depth();
 
-
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
 

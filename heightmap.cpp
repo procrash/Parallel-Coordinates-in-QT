@@ -174,8 +174,8 @@ void HeightMap::loadVertexData() {
     iRows = img.height();
     iCols = img.width();
 
-    float fTextureU = float(iCols)*0.1f;
-    float fTextureV = float(iRows)*0.1f;
+    float fTextureU = float(iCols)*0.005f;
+    float fTextureV = float(iRows)*0.005f;
 
     vVertexData = vector<vector<glm::vec3>>(iRows, vector<glm::vec3>(iCols));
     vCoordsData = vector<vector<glm::vec2>> (iRows, vector<glm::vec2>(iCols));
@@ -409,6 +409,25 @@ void HeightMap::render() {
     int iSamplerLoc = glGetUniformLocation(shaderProgramId, "gSampler");
     glUniform1i(iSamplerLoc, 0);
     heightMapTexture.bindTexture(0);
+
+    // Set Directional Light
+    glm::vec3 sunLightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 sunLightDirection(1.0f, 1.0f, 1.0f);
+    GLfloat sunLightAmbientIntensity = 0.25f;
+
+    int sunLightVColorLoc = glGetUniformLocation(shaderProgramId, "sunLight.vColor");
+    glUniform3fv(sunLightVColorLoc, 1, (GLfloat*)&sunLightColor);
+
+    int sunLightAmbientIntensityLoc = glGetUniformLocation(shaderProgramId, "sunLight.fAmbientIntensity");
+    glUniform1fv(sunLightAmbientIntensityLoc, 1, (GLfloat*)&sunLightAmbientIntensity);
+
+    int sunLightVDirectionLoc = glGetUniformLocation(shaderProgramId, "sunLight.vDirection");
+    glUniform3fv(sunLightVDirectionLoc, 1, (GLfloat*)&sunLightDirection);
+
+
+
+
+
 
     // glDrawArrays(GL_POINTS, 0, iRows*iCols);
 
