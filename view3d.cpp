@@ -332,10 +332,10 @@ void View3D<T>::initializeData()
 }
 
 template<class T>
-glm::mat4 View3D<T>::camera(float Translate, glm::vec2 const & Rotate)
+glm::mat4 View3D<T>::camera(glm::vec3 translateVector, glm::vec2 const & Rotate)
 {
     glm::mat4 Projection = glm::perspective(glm::radians(60.0f), 4.0f / 3.0f, 0.1f, 100.f);
-    glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -Translate));
+    glm::mat4 View = glm::translate(glm::mat4(1.0f), glm::vec3(translateVector.x, translateVector.y, translateVector.z));
     View = glm::rotate(View, Rotate.x, glm::vec3(1.0f, 0.0f, 0.0f));
     View = glm::rotate(View, Rotate.y, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
@@ -347,7 +347,10 @@ void View3D<T>::paintGL()
 {
     // Determine Model View Matrix...
     float translate = 2.0f+distance/20.0f;
-    glm::mat4 mvp = camera(translate, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180));
+
+    translateVector.z = -translate;
+
+    glm::mat4 mvp = camera(translateVector, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180));
     heightMap.setModelViewMatrix(mvp);
 
     /*
@@ -445,18 +448,27 @@ void View3D<T>::mouseMoveEvent(QMouseEvent *event)
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
 
-    if (event->buttons() & Qt::LeftButton) {
-        setXRotation(xRot + 8 * dy);
-        setYRotation(yRot + 8 * dx);
-    } else if (event->buttons() & Qt::RightButton) {
+    if (!commandKeyPressed) {
+        if (event->buttons() & Qt::LeftButton) {
+            setXRotation(xRot + 8 * dy);
+            setYRotation(yRot + 8 * dx);
+        } else if (event->buttons() & Qt::RightButton) {
 
-        setXRotation(xRot + 8 * dy);
-        setZRotation(zRot + 8 * dx);
+            setXRotation(xRot + 8 * dy);
+            setZRotation(zRot + 8 * dx);
 
-        /*
-        xDistance+=dx/100;
+            /*
+            xDistance+=dx/100;
+            this->update();
+            */
+        }
+    } else {
+        translateVector.x -= dx*0.003*translateVector.z;
+        translateVector.y += dy*0.003*translateVector.z;
+
+        cout << "DX:" << translateVector.x << " DY: " << translateVector.y << endl;
+
         this->update();
-        */
     }
 
 
@@ -496,6 +508,14 @@ void View3D<T>::mouseDoubleClickEvent(QMouseEvent *e) {
     }
 }
 
+template<class T>
+void View3D<T>::keyReleaseEvent(QKeyEvent * event) {
+    if (event->key() == Qt::Key_Control) {
+        commandKeyPressed = false;
+        cout << "Command Key Released" << endl;
+    }
+}
+
 
 template<class T>
 void View3D<T>::keyPressEvent(QKeyEvent *keyEvent) {
@@ -527,5 +547,32 @@ void View3D<T>::keyPressEvent(QKeyEvent *keyEvent) {
         this->update();
     }
 
+    if (keyEvent->key() == Qt::Key_Control) {
+        commandKeyPressed = true;
+        cout << "Command Key Pressed" << endl;
+
+    }
+
 }
+
+
+template<class T>
+void View3D<T>::keyPressedEventHandler(QKeyEvent *keyEvent){
+    if (keyEvent->key() == Qt::Key_Control) {
+        commandKeyPressed = true;
+        cout << "Command Key pressed" << endl;
+
+    }
+
+};
+
+template<class T>
+void View3D<T>::keyReleasedEventHandler(QKeyEvent *keyEvent){
+    if (keyEvent->key() == Qt::Key_Control) {
+        commandKeyPressed = false;
+        cout << "Command Key released" << endl;
+    }
+
+};
+
 

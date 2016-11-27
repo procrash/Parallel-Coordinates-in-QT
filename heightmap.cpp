@@ -412,7 +412,15 @@ void HeightMap::render() {
 
     // Set Directional Light
     glm::vec3 sunLightColor(1.0f, 1.0f, 1.0f);
+
     glm::vec3 sunLightDirection(1.0f, 1.0f, 1.0f);
+
+    glm::vec4 temp = glm::vec4(sunLightDirection, 1.0)*this->modelViewMatrix;
+    sunLightDirection.x = temp.x;
+    sunLightDirection.y = temp.y;
+    sunLightDirection.z = temp.z;
+
+
     GLfloat sunLightAmbientIntensity = 0.25f;
 
     int sunLightVColorLoc = glGetUniformLocation(shaderProgramId, "sunLight.vColor");

@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
      this->ui->verticalLayout->addWidget(splitter);
 
+
+
 }
 
 MainWindow::~MainWindow()
@@ -228,4 +230,10 @@ void MainWindow::on_pushButton_clicked()
     this->view3dPtr->showFullScreen();
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *keyEvent) {
+    this->view3dPtr->keyPressedEventHandler(keyEvent);
+}
 
+void MainWindow::keyReleaseEvent(QKeyEvent * keyEvent) {
+    this->view3dPtr->keyReleasedEventHandler(keyEvent);
+}

@@ -34,25 +34,21 @@ public:
 private slots:
 
     void on_actionQuit_triggered();
-
     void on_actionOpen_triggered();
-
     void on_actionCalc_triggered();
-
     void on_actionTest_triggered();
-
     void on_actionLoad_Data_from_File_triggered();
-
     void on_actionLoad_Default_Data_triggered();
-
     void on_actionGenerate_Random_Data_triggered();
-
     void on_actionDraw_data_out_of_range_changed();
-
     void on_pushButton_clicked();
 
 protected:
     void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
+
+    void keyPressEvent(QKeyEvent *keyEvent) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent * event) Q_DECL_OVERRIDE;
+
 private:
     Ui::MainWindow *ui;
     DataStore<WIDGET_DATA_TYPE> dataStore;

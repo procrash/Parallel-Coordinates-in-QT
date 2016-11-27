@@ -25,6 +25,8 @@ class View3D: public QOpenGLWidget
 
 private:
 
+    bool commandKeyPressed = false;
+
     HeightMap heightMap;
 
     GLuint vertexArrayId;
@@ -85,6 +87,7 @@ private:
 
     void setTranslationX(int distance);
     void setTranslationY(int distance);
+//    void setTranslationZ(int )
 
     QString readStringFromResourceFile(QString filenameIncludingPath);
     void printShaderInfoLog(GLuint obj);
@@ -94,9 +97,9 @@ private:
 
     void initializeData();
 
+    glm::vec3 translateVector;
 
-
-    glm::mat4 camera(float Translate, glm::vec2 const & Rotate);
+    glm::mat4 camera(glm::vec3 translateVector, glm::vec2 const & Rotate);
 
 public:
     View3D(QWidget *parent)
@@ -128,6 +131,9 @@ public:
 
     void setDataStorePtr(DataStore<T>* dataStorePtr);
 
+    void keyPressedEventHandler(QKeyEvent *keyEvent);
+    void keyReleasedEventHandler(QKeyEvent * event);
+
 protected:
     void initializeGL() Q_DECL_OVERRIDE;
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
@@ -139,6 +145,7 @@ protected:
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
     void keyPressEvent(QKeyEvent *keyEvent) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent * event) Q_DECL_OVERRIDE;
 
 signals:
     void xRotationChanged(int angle);
