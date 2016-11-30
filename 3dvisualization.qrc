@@ -4,11 +4,20 @@
         <file>vertexShader.glsl</file>
         <file>heightmapFragmentShader.glsl</file>
         <file>heightmapVertexShader.glsl</file>
+        <file>vertexShaderSkybox.glsl</file>
+        <file>fragmentShaderSkybox.glsl</file>
     </qresource>
     <qresource prefix="/images">
         <file>heightmap.jpg</file>
         <file>Black.png</file>
         <file>StoneTexture.jpg</file>
         <file>snow.jpg</file>
+        <file>asteroid.png</file>
+        <file>space_bck.png</file>
+        <file>space_bttm.png</file>
+        <file>space_frnt.png</file>
+        <file>space_left.png</file>
+        <file>space_rgt.png</file>
+        <file>space_top.png</file>
     </qresource>
 </RCC>

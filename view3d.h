@@ -17,6 +17,9 @@
 
 #include <glm/mat4x4.hpp> // glm::mat4
 
+#include "skybox.h"
+
+
 using namespace std;
 
 template<class T>
@@ -28,6 +31,7 @@ private:
     bool commandKeyPressed = false;
 
     HeightMap heightMap;
+    Skybox skybox;
 
     GLuint vertexArrayId;
     GLuint indicesArrayId;

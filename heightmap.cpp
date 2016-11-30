@@ -185,44 +185,26 @@ void HeightMap::loadVertexData() {
         {
             QColor clrCurrent( img.pixel( row, col ) );
 
-            float red = clrCurrent.red(); //.redF();
-            float green = clrCurrent.green(); //.greenF();
-            float blue = clrCurrent.blue(); // .blueF();
+            float red = clrCurrent.red();
+            float green = clrCurrent.green();
+            float blue = clrCurrent.blue();
 
-//            float level = 0.299 * red + 0.587 * green + 0.114 * blue;
-            float level = (red + green + blue)/3; //(255.0f*3);
+            float level = (red + green + blue)/3;
 
             if (level>255.0f) level=255.0f;
 
             float fScaleC = float(col)/float(iCols-1);
             float fScaleR = float(row)/float(iRows-1);
 
-            // cout << "Init:" << fScaleC << " " << fScaleR << endl;
             glm::vec3 pixel = glm::vec3(-0.5f+fScaleC,level/255.0f, -0.5f+fScaleR);
 
-
-            // cout << "Row:" << row << " Col:" << col << endl;
             vVertexData[row][col] = pixel;
             vCoordsData[row][col] = glm::vec2(fTextureU*fScaleC, fTextureV*fScaleR);
 
-            /*
-            std::cout << "Pixel at [" << row << "," << col << "] contains color ("
-                      << clrCurrent.red() << ", "
-                      << clrCurrent.green() << ", "
-                      << clrCurrent.blue() << ", "
-                      << clrCurrent.alpha() << ")."
-                      << std::endl;
-            */
         }
    }
 
-    /*
-    for ( int row = 0; row < iRows ; ++row ) {
-        for ( int col = 0; col < iCols; ++col )
-        {
-             vVertexData[row][col]  *=100;
-        }
-    }*/
+
 
 }
 

@@ -194,6 +194,7 @@ void View3D<T>::initializeGL()
 
     // Now initialize other OpenGL dependent Classes
     heightMap.initialize();
+    skybox.initialize();
 }
 
 template<class T>
@@ -353,6 +354,7 @@ void View3D<T>::paintGL()
     glm::mat4 mvp = camera(translateVector, glm::vec2((float)(xRot/16)*M_PI/180,(float)(yRot/16)*M_PI/180));
     heightMap.setModelViewMatrix(mvp);
 
+    skybox.setModelViewMatrix(mvp);
     /*
 
     glBindVertexArray(vertexArrayId);
@@ -378,6 +380,8 @@ void View3D<T>::paintGL()
     glUseProgram(0);
     glBindVertexArray(0);
     */
+
+     skybox.render();
 
      heightMap.render();
 

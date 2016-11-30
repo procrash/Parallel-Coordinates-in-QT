@@ -22,7 +22,9 @@ SOURCES += main.cpp\
     parallelcoordinatesworker.cpp \
     parallelcoordinatesworkerobserver.cpp \
     heightmap.cpp \
-    texture.cpp
+    texture.cpp \
+    cubemaptexture.cpp \
+    skybox.cpp
 
 HEADERS  += mainwindow.h \
     qrangeslider.h \
@@ -36,7 +38,9 @@ HEADERS  += mainwindow.h \
     parallelcoordinatesworkerobserver.h \
     vmath.h \
     heightmap.h \
-    texture.h
+    texture.h \
+    cubemaptexture.h \
+    skybox.h
 
 FORMS    += mainwindow.ui
 
