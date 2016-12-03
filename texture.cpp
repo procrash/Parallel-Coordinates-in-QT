@@ -66,7 +66,7 @@ void Texture::setFiltering(int a_tfMagnification, int a_tfMinification)
 
 void Texture::bindTexture(int iTextureUnit)
 {
-    cout << "Binding Textures" << endl;
+   //  cout << "Binding Textures" << endl;
     glActiveTexture(GL_TEXTURE0+iTextureUnit);
     glBindTexture(GL_TEXTURE_2D, textureId);
     glBindSampler(iTextureUnit, samplerId);

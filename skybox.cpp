@@ -15,49 +15,71 @@ Skybox::Skybox()
 
 void Skybox::initialize() {
 
-    loadTextures();
-
-    loadVertexData();
 
     this->shaderProgramId = compileShaders();
     matrixUniformId = glGetUniformLocation(shaderProgramId, "matrix");
 
+   //  glEnable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-
+    loadTextures();
+    loadVertexData();
     createBuffers();
+
+
+    // connect texture to fragment shader sampler
+    unsigned int texture_unit = 0;
+    int location = glGetUniformLocation(this->shaderProgramId , "skyBoxSampler");
+    glProgramUniform1i(this->shaderProgramId , location, texture_unit);
+
+    //glBindTextureUnit(texture_unit, texture);
+    glActiveTexture(GL_TEXTURE0+texture_unit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cmTexture.textureId);
 
 }
 
 void Skybox::render() {
 
-    glDepthMask(0);
+
+    // glEnable(GL_TEXTURE_3D);
+    // glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    glDepthMask(GL_FALSE);
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(5);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+
     glBindVertexArray(uiVAO);
+    cmTexture.bindTexture(0);
+
     glUseProgram(this->shaderProgramId);
 
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
     glUniformMatrix4fv(this->matrixUniformId, 1, GL_FALSE,  glm::value_ptr(modelViewMatrix));
 
-    int iSamplerLoc = glGetUniformLocation(shaderProgramId, "gSampler");
+    int iSamplerLoc = glGetUniformLocation(shaderProgramId, "skyBoxSampler");
     glUniform1i(iSamplerLoc, 0);
-    cmTexture.bindTexture(0);
 
+
+
+    cmTexture.printOpenGLErrors();
 
     glDrawArrays(GL_TRIANGLES, 0, vVertexData.size());
+
 
     glUseProgram(0);
     glBindVertexArray(0);
 
-    glPointSize(0);
-    glDisable(GL_POINT);
+
+    glDisable(GL_PROGRAM_POINT_SIZE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glDepthMask(1);
+    glDepthMask(GL_TRUE);
+
+    // glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 void Skybox::loadVertexData() {
@@ -243,12 +265,14 @@ void Skybox::setModelViewMatrix(glm::mat4 matrix) {
 
 void Skybox::loadTextures() {
 
-    QString paths[] = {":/images/space_bck.png",
-                       ":/images/space_bttm.png",
-                       ":/images/space_frnt.png",
-                       ":/images/space_left.png",
+    QString paths[] = {
                        ":/images/space_rgt.png",
-                       ":/images/space_top.png"};
+                       ":/images/space_left.png",
+                       ":/images/space_top.png",
+                       ":/images/space_bttm.png",
+                       ":/images/space_bck.png",
+                       ":/images/space_frnt.png"
+                      };
 
 
     cmTexture.load(paths);

@@ -382,9 +382,7 @@ void View3D<T>::paintGL()
     */
 
      skybox.render();
-
      heightMap.render();
-
 
 }
 
