@@ -32,9 +32,14 @@ void Skybox::initialize() {
     int location = glGetUniformLocation(this->shaderProgramId , "skyBoxSampler");
     glProgramUniform1i(this->shaderProgramId , location, texture_unit);
 
+//    glGenTextures(1, &cmTexture.textureId);
+
     //glBindTextureUnit(texture_unit, texture);
     glActiveTexture(GL_TEXTURE0+texture_unit);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cmTexture.textureId);
+
+    glBindTexture(GL_TEXTURE_2D, cmTexture.textureId);
+
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, cmTexture.textureId);
 
 }
 
@@ -53,15 +58,16 @@ void Skybox::render() {
 
 
     glBindVertexArray(uiVAO);
-    cmTexture.bindTexture(0);
 
     glUseProgram(this->shaderProgramId);
+
+    cmTexture.bindTexture(5);
 
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
     glUniformMatrix4fv(this->matrixUniformId, 1, GL_FALSE,  glm::value_ptr(modelViewMatrix));
 
     int iSamplerLoc = glGetUniformLocation(shaderProgramId, "skyBoxSampler");
-    glUniform1i(iSamplerLoc, 0);
+    glUniform1i(iSamplerLoc, 5);
 
 
 

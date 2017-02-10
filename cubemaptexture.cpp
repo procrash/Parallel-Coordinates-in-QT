@@ -12,11 +12,11 @@ void CubeMapTexture::load(QString paths[]) {
 
     if (initialized) {
         glDeleteTextures(1, &textureId);
-        glDeleteSamplers(1, &samplerId);
+        // glDeleteSamplers(1, &samplerId);
     }
 
 
-    glBindSampler(0, 0);
+    // glBindSampler(0, 0);
 
     std::cout << "Loading Textures..." << std::endl;
 
@@ -27,7 +27,8 @@ void CubeMapTexture::load(QString paths[]) {
     GLuint textureId;
 
     glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     /*
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -76,19 +77,27 @@ void CubeMapTexture::load(QString paths[]) {
         unsigned char zpos[] = { 0x00, 0x00, 0xFF, 0xFF };    // blue
         unsigned char zneg[] = { 0xFF, 0xFF, 0x00, 0xFF };    // yellow
       //  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, xpos);
+
+        /*
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, xpos);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, xneg);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ypos);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, yneg);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, zpos);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, zneg);
+*/
 
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+         // glGenSamplers(1, &samplerId);
+
+         glBindTexture(GL_TEXTURE_2D, 0);
 
 
 
@@ -97,7 +106,7 @@ void CubeMapTexture::load(QString paths[]) {
 
 
 
-   //  glGenSamplers(1, &samplerId);
+
 
 
 
@@ -108,7 +117,8 @@ void CubeMapTexture::bindTexture(int iTextureUnit) {
 
     std::cout << "Binding Textures Cubemap" << std::endl;
     glActiveTexture(GL_TEXTURE0+iTextureUnit);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+    // glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     // glBindSampler(iTextureUnit, samplerId);
 }
