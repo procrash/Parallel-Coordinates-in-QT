@@ -1,1 +1,0 @@
-# Parallel-Coordinates-in-QT

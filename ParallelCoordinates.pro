@@ -1,55 +1,64 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-09-07T11:53:49
+# Project created by QtCreator 2018-11-05T10:01:32
 #
 #-------------------------------------------------
 
 QT       += core gui
-QMAKE_MAC_SDK = macosx10.12
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = ParallelCoordinates 
+TARGET = ParallelCoordinates
 TEMPLATE = app
 
+# The following define makes your compiler emit warnings if you use
+# any feature of Qt which has been marked as deprecated (the exact warnings
+# depend on your compiler). Please consult the documentation of the
+# deprecated API in order to know how to port your code away from it.
+DEFINES += QT_DEPRECATED_WARNINGS
 
-SOURCES += main.cpp\
-    mainwindow.cpp \
-    qrangeslider.cpp \
-    parallelcoordinateswidget.cpp \
-    view3d.cpp \
+# You can also make your code fail to compile if you use deprecated APIs.
+# In order to do so, uncomment the following line.
+# You can also select to disable deprecated APIs only up to a certain version of Qt.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
+CONFIG += c++11
+
+SOURCES += \
+        main.cpp \
+        mainwindow.cpp \
     datastore.cpp \
-    qrangesliderobserver.cpp \
+    parallelcoordinateswidget.cpp \
     parallelcoordinatesworker.cpp \
     parallelcoordinatesworkerobserver.cpp \
-    heightmap.cpp \
-    texture.cpp \
-    cubemaptexture.cpp \
-    skybox.cpp
+    qrangeslider.cpp \
+    qrangesliderobserver.cpp
 
-HEADERS  += mainwindow.h \
-    qrangeslider.h \
-    parallelcoordinateswidget.h \
-    parallelcoordinatesglobals.h \
-    view3d.h \
+HEADERS += \
+        mainwindow.h \
     dataset.h \
     datastore.h \
-    qrangesliderobserver.h \
+    parallelcoordinatesglobals.h \
+    parallelcoordinateswidget.h \
     parallelcoordinatesworker.h \
     parallelcoordinatesworkerobserver.h \
-    vmath.h \
-    heightmap.h \
-    texture.h \
-    cubemaptexture.h \
-    skybox.h
+    qrangeslider.h \
+    qrangesliderobserver.h
 
-FORMS    += mainwindow.ui
+FORMS += \
+        mainwindow.ui
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target
+
+
+LIBS += -L/usr/local/lib
+#LIBS += -lboost_program_options
+LIBS += -lboost_system
+INCLUDEPATH += /usr/local/include
 
 DISTFILES += \
-    3dVisualization/fragmentShader.glsl \
-    3dVisualization/vertexShader.glsl \
-    heightmap.jpg
-
-RESOURCES += \
-    3dvisualization.qrc
-
-INCLUDEPATH += 3rdParty/glm
+    carsDataset.csv \
+    iris.csv

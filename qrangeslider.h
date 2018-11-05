@@ -2,6 +2,8 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QLabel>
+
 #include <vector>
 
 #include "parallelcoordinatesglobals.h"
@@ -12,6 +14,9 @@ using namespace std;
 class QRangeSlider : public QWidget
 {
     Q_OBJECT
+
+signals:
+    void onMove(QMouseEvent *event);
 
 public slots:
     void on_topTextBox_EditingFinishedTriggered();
@@ -25,6 +30,7 @@ public:
     void unregisterQRangeSliderObserver(QRangeSliderObserver* observer);
 
 
+    QLabel dimLabel;
     QLineEdit lineEditTop;
     QLineEdit lineEditBottom;
 
@@ -41,14 +47,17 @@ public:
     double getSliderWidth();
     double getCircleRadius();
     void unsetHighlights();
-
+    void setLabel(std::string label);
     void deselect();
     int getSlideBarHeight();
     int getSlideBarStartY();
     bool getMinValDisplayedOnTop();
+    void recalcPositions();
+    bool shallMove();
 
 private:
 
+    QString dimLabelText ;
     vector<QRangeSliderObserver*> observers;
 
     bool minValDisplayedOnTop = true;
@@ -73,6 +82,10 @@ private:
 
     int textBoxLocationTopX;
     int textBoxLocationTopY;
+
+    int labelLocationTopX;
+    int labelLocationTopY;
+
 
     int textBoxLocationBottomX;
     int textBoxLocationBottomY;

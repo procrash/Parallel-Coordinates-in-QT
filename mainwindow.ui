@@ -6,95 +6,23 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>589</width>
-    <height>546</height>
+    <width>748</width>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <layout class="QFormLayout" name="formLayout">
-    <item row="1" column="1">
-     <widget class="QWidget" name="parallelCoordinatesPlace" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>300</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <layout class="QVBoxLayout" name="verticalLayout"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QOpenGLWidget" name="view3dSpace">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>100</width>
-        <height>100</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="pushButton">
-      <property name="maximumSize">
-       <size>
-        <width>100</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>fullscreen</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>589</width>
+     <width>748</width>
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <widget class="QMenu" name="menuData">
-     <property name="title">
-      <string>Data</string>
-     </property>
-     <addaction name="actionGenerate_Random_Data"/>
-     <addaction name="actionLoad_Default_Data"/>
-     <addaction name="actionLoad_Data_from_File"/>
-    </widget>
-    <addaction name="actionQuit"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionCalc"/>
-    <addaction name="actionTest"/>
-    <addaction name="menuData"/>
-   </widget>
-   <widget class="QMenu" name="menuOptions">
-    <property name="title">
-     <string>Options</string>
-    </property>
-    <addaction name="actionDraw_data_out_of_range"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuOptions"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -105,49 +33,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionQuit">
-   <property name="text">
-    <string>Quit</string>
-   </property>
-  </action>
-  <action name="actionOpen">
-   <property name="text">
-    <string>Open</string>
-   </property>
-  </action>
-  <action name="actionCalc">
-   <property name="text">
-    <string>Calc</string>
-   </property>
-  </action>
-  <action name="actionTest">
-   <property name="text">
-    <string>test</string>
-   </property>
-  </action>
-  <action name="actionDraw_data_out_of_range">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>draw data out of range</string>
-   </property>
-  </action>
-  <action name="actionGenerate_Random_Data">
-   <property name="text">
-    <string>Generate Random Data</string>
-   </property>
-  </action>
-  <action name="actionLoad_Default_Data">
-   <property name="text">
-    <string>Load Default Data</string>
-   </property>
-  </action>
-  <action name="actionLoad_Data_from_File">
-   <property name="text">
-    <string>Load Data from File</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

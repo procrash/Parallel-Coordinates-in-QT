@@ -2,21 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-//#include <boost/thread.hpp>
-#include <vector>
-//#include "networkData.h"
-//#include "network.h"
-#include "parallelcoordinatesglobals.h"
 
-#include "datastore.h"
-#include "datastore.cpp"
 #include "parallelcoordinateswidget.h"
-#include "parallelcoordinateswidget.cpp"
-
-#include "view3d.h"
-#include "view3d.cpp"
-
-using namespace std;
 
 namespace Ui {
 class MainWindow;
@@ -27,36 +14,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-private slots:
-
-    void on_actionQuit_triggered();
-    void on_actionOpen_triggered();
-    void on_actionCalc_triggered();
-    void on_actionTest_triggered();
-    void on_actionLoad_Data_from_File_triggered();
-    void on_actionLoad_Default_Data_triggered();
-    void on_actionGenerate_Random_Data_triggered();
-    void on_actionDraw_data_out_of_range_changed();
-    void on_pushButton_clicked();
-
-protected:
-    void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
-
-    void keyPressEvent(QKeyEvent *keyEvent) Q_DECL_OVERRIDE;
-    void keyReleaseEvent(QKeyEvent * event) Q_DECL_OVERRIDE;
 
 private:
     Ui::MainWindow *ui;
+    ParallelCoordinatesWidget<WIDGET_DATA_TYPE>* parallelCoordinatesWidget;
     DataStore<WIDGET_DATA_TYPE> dataStore;
-    ParallelCoordinatesWidget<WIDGET_DATA_TYPE>* parallelCoordinatesPtr;
-    View3D<WIDGET_DATA_TYPE>* view3dPtr;
-    QTableWidget* tableWidget;
+    void addDataCars();
+    void addDataIris() {
+        dataStore.loadDataset("/Users/wolfgangmeyerle/Documents/workspace/ParallelCoordinates/iris.csv",5,0,1, std::vector<size_t>{4} );
 
-    void loadFileData(QString fileName);
+        this->parallelCoordinatesWidget->setDataStorePtr(&dataStore);
+        this->parallelCoordinatesWidget->calcDataInBackground();
+    }
 };
 
 #endif // MAINWINDOW_H

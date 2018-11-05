@@ -17,14 +17,14 @@ template<class T>
 class ParallelCoordinatesWorker: public QThread
 {
 private:
-    int posStartY;
+    int posStartY{0};
     int valuesHeight;
 
     int width;
     int height;
 
     DataStore<T>* dataStorePtr=NULL;
-    vector<int> dataOrder;
+    vector<std::size_t> dataOrder;
 
     bool minValDisplayedOnTop[nrOfDimensions];
     int xPositionDimensions[nrOfDimensions];
@@ -72,6 +72,8 @@ public:
 
     void registerParallelCoordinatesWorkerObserver(ParallelCoordinatesWorkerObserver* observer);
     void unregisterParallelCoordinatesWorkerObserver(ParallelCoordinatesWorkerObserver* observer);
+
+    void setSliderOrders(std::vector<size_t> orders);
 
 protected:
 

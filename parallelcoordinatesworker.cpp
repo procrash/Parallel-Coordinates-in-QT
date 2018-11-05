@@ -56,6 +56,11 @@ void ParallelCoordinatesWorker<T>::unregisterParallelCoordinatesWorkerObserver(P
     }
 }
 
+template<class T>
+void ParallelCoordinatesWorker<T>::setSliderOrders(std::vector<size_t> orders) {
+    this->dataOrder = orders;
+}
+
 
 template<class T>
 void ParallelCoordinatesWorker<T>::resize(int width, int height) {
@@ -117,6 +122,32 @@ void ParallelCoordinatesWorker<T>::setDataStorePtr(DataStore<T>* dataStore) {
 template<class T>
 void ParallelCoordinatesWorker<T>::recalculateDrawingLines() {
 
+
+    std::cout << "DataOrder is:";
+    for (int dim=0; dim<nrOfDimensions; dim++) {
+
+        int idxPos = dataOrder.at(dim);
+        std::cout << idxPos << " ";
+    }
+
+    std::cout << std::endl;
+
+
+    std::cout << "MinValDisplayed on Top:";
+    for (int dim=0; dim<nrOfDimensions; dim++) {
+        bool mvd = minValDisplayedOnTop[dim];
+        if (mvd) {
+            std::cout << "Y";
+        } else {
+            std::cout << "N";
+        }
+
+    }
+
+    std::cout << std::endl;
+
+
+
     drawingLinesIn.clear();
     drawingLinesOut.clear();
 
@@ -152,18 +183,18 @@ void ParallelCoordinatesWorker<T>::recalculateDrawingLines() {
 
             int idxPos = dataOrder.at(dim);
 
-            int xPos = xPositionDimensions[dataOrder.at(dim)];
+            int xPos = xPositionDimensions[/*dataOrder.at(*/dim/*)*/];
             // cout << "XPos is " << xPos << endl;
             int yPos = getYPositionForVal(ds.dimVal[idxPos], dataOrder.at(dim));
 
-            if (currentSetMinVal[dataOrder.at(dim)]>ds.dimVal[idxPos] ||
-                currentSetMaxVal[dataOrder.at(dim)]<ds.dimVal[idxPos]) {
+            if (currentSetMinVal[/*dataOrder.at(dim)*/ dim]>ds.dimVal[idxPos] ||
+                currentSetMaxVal[/*dataOrder.at(dim)*/ dim]<ds.dimVal[idxPos]) {
                 // Data is out of selection scope, paint it grey
                 lineIsPart = false;
                 color = colorLineIsNotPart;
             }
 
-            QPointF point((double) xPos, (double) yPos);
+            QPointF point(static_cast<double>(xPos), static_cast<double>(yPos));
 
             if (lastPointInitialized) {
                 QLineF line(lastPoint, point);
@@ -375,8 +406,8 @@ void ParallelCoordinatesWorker<T>::run() {
     this->recalculateDrawingLines();
     this->reduceDrawingDataSet();
     this->renderLines(width, height);
-    cout << "Done" << endl;
+    //cout << "Done" << endl;
 
-    pm.save("image.png", "PNG");
+    //pm.save("image.png", "PNG");
     updateGui();
 }

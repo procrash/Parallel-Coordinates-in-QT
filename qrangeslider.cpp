@@ -11,17 +11,36 @@
 
 #include <QObject>
 
+#include "parallelcoordinateswidget.h"
+
 using namespace std;
 
 
 
-QRangeSlider::QRangeSlider(QWidget *parent)
+QRangeSlider::QRangeSlider(QWidget *parent): QWidget(parent)
 {
+
+    /*
+    QPalette pal = palette();
+
+    // set black background
+    pal.setColor(QPalette::Background, Qt::black);
+    this->setAutoFillBackground(true);
+    this->setPalette(pal);
+    */
+
     this->setMouseTracking(true);
     this->setMinimumWidth(100);
 
     this->textBoxWidthTopAndBottom = 60;
     this->textBoxHeightTopAndBottom = 20;
+
+    // Position Axis Label
+    dimLabel.setParent(this);
+    dimLabel.setAlignment(Qt::AlignCenter);
+    dimLabel.setText(dimLabelText);
+    dimLabel.move(labelLocationTopX, labelLocationTopY);
+
 
     // Position Textboxes Top and Bottom
     lineEditTop.setParent(this);
@@ -67,16 +86,24 @@ void QRangeSlider::deselect() {
     update();
 }
 
-void QRangeSlider::resizeEvent(QResizeEvent * event) {
+void QRangeSlider::recalcPositions() {
+
     xPositionSliderBar = 15+20;
 
+    QFontMetrics fm = dimLabel.fontMetrics();
+    labelLocationTopX = (xPositionSliderBar)-fm.width(dimLabelText)/2;
+    labelLocationTopY = 2;
+
     textBoxLocationTopX = (xPositionSliderBar)-50/2;
-    textBoxLocationTopY = 5;
+    textBoxLocationTopY = 20;
+
 
     textBoxLocationBottomX = (xPositionSliderBar)-50/2;
     int height = this->size().height();
     // height=200;
     textBoxLocationBottomY = height-20;
+
+    dimLabel.move(labelLocationTopX, labelLocationTopY);
 
     lineEditTop.move(textBoxLocationTopX,textBoxLocationTopY);
     lineEditBottom.move(textBoxLocationBottomX,textBoxLocationBottomY);
@@ -85,9 +112,20 @@ void QRangeSlider::resizeEvent(QResizeEvent * event) {
     grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal)-circleRadius;
 
 
+
     centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
     centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
 
+}
+
+bool QRangeSlider::shallMove(){
+    return mousePressed && !topValGrab && !bottomValGrab;
+}
+void QRangeSlider::resizeEvent(QResizeEvent * event) {
+
+    std::cout << "QRangeSlider::resizeEvent" << std::endl;
+
+    recalcPositions();
 }
 
 int QRangeSlider::getSlideBarHeight() {
@@ -293,33 +331,37 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
             }
         } else {
 
+
             int ySnappedFlipped = this->getYPositionForVal((double)(y)*(maxVal-minVal)/(double) this->slideBarHeight +minVal, false)-circleRadius;
             if (topValGrab) {
-                // cout << "Check: " << ySnapped << "<=" << this->grabHandleYPositionBottom << endl;
-                if (ySnapped<=this->grabHandleYPositionBottom) {
-                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+
+                if (ySnapped>=this->grabHandleYPositionBottom) {
+                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
                     // Snap to fixed values...
                     grabHandleYPositionTop = ySnapped;
                     // Readjust Hittest zone
                     centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
                 } else {
-                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+
+                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
                     // Snap to fixed values...
                     grabHandleYPositionBottom = ySnapped;
                     // Readjust Hittest zone
                     centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
                     bottomValGrab = true;
                     topValGrab = false;
+
                 }
             } else {
-                if (ySnapped>=this->grabHandleYPositionTop) {
-                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+
+                if (ySnapped<=this->grabHandleYPositionTop) {
+                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
                     // Snap to fixed values...
                     grabHandleYPositionBottom = ySnapped;
                     // Readjust Hittest zone
                     centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionBottom); // Store position for Mouse Hit Test
                 } else {
-                    this->currentSetBottomVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
+                    this->currentSetTopVal = (double)(ySnappedFlipped-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
                     // Snap to fixed values...
                     grabHandleYPositionTop = ySnapped;
                     // Readjust Hittest zone
@@ -327,11 +369,13 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
 
                     bottomValGrab = false;
                     topValGrab = true;
-
                 }
+
             }
 
         }
+
+
 
         /*
         if (abs( grabHandleYPositionTop-(y+slideBarStartY)) <
@@ -367,8 +411,24 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
 
         // informObserversMinMaxValChanged();
 
+
         this->repaint();
     }
+
+    if (this->mousePressed && !topValGrab && !bottomValGrab) {
+//        ((ParallelCoordinatesWidget<WIDGET_DATA_TYPE>*)this->parent())->
+//        QPointF res = this->mapFromParent(QPoint(mouseX, mouseY));
+        QPointF res = this->mapTo(this->parentWidget(), QPoint(mouseX/*-this->width()/2*/, mouseY));
+
+        this->move(res.x()-(this->width()/2), this->pos().y());
+
+        //this->recalcPositions();
+//        this->repaint();
+
+        std::cout << "Moving to:" << mouseX << " " << mouseY << std::endl;
+    }
+
+
 
 }
 
@@ -473,12 +533,27 @@ void QRangeSlider::mousePressEvent(QMouseEvent *event) {
 
         if (hitTestTopGrabHandle(x,y)) {
             // Mouse is situated in minVal grab handle
+    //        if (minValDisplayedOnTop) {
                 topValGrab = true;
                 bottomValGrab = false;
+    //        }
+    //        else {
+    //            topValGrab = false;
+    //            bottomValGrab = true;
+    //        }
+
         } else if (hitTestBottomGrabHandle(x,y)){
             // Mouse is situated in maxVal grab handle
-                bottomValGrab = true;
+//            if (minValDisplayedOnTop) {
                 topValGrab = false;
+                bottomValGrab = true;
+  //          }
+  //          else {
+  //              topValGrab = true;
+  //              bottomValGrab = false;
+
+  //          }
+
         } else {
             topValGrab = false;
             bottomValGrab = false;
@@ -586,9 +661,15 @@ void QRangeSlider::unsetHighlights() {
     resetButtonHighlights();
 }
 
+void QRangeSlider::setLabel(std::string label) {
+    this->dimLabelText = QString(label.c_str());
+    dimLabel.setText(dimLabelText);
+
+}
+
 void QRangeSlider::resetButtonHighlights() {
     hightlightTopGrabHandle = false;
-    hightlightBottomGrabHandle = false;   
+    hightlightBottomGrabHandle = false;
 }
 
 
@@ -601,7 +682,7 @@ void QRangeSlider::paintTextBoxWithValue(QPainter* painter, int x, int y, int wi
     QPen penBoxNotHighlighted(QColor("#BBBBBB"), 1 , Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
 
     if (drawHighlighted) {
-    // Draw Rectangles around text    
+    // Draw Rectangles around text
         painter->setPen(penBoxHighlighted);
     } else {
         painter->setPen(penBoxNotHighlighted);
@@ -627,7 +708,7 @@ void QRangeSlider::paintTextBoxWithValue(QPainter* painter, int x, int y, int wi
 
     QString fontName = FONT_NAME_TEXT_BOX;
     int fontSize = FONT_SIZE_TEXT_BOX;
-    
+
 
     ostringstream os;
     os << fixed << std::setprecision(precision) << val;
