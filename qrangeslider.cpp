@@ -243,12 +243,30 @@ void QRangeSlider::paintSlider(QPainter* painter, int x, int y , int width, int 
     slideBarHeight = height;
 
     // Draw unfilled slide area
-    drawSlideBar(painter, x, y, width, height,QColor("#BBBBBB"), QColor("#D0D0D0"),QColor("#E1E1E1"));
+    if (sliderBarHighlighted) {
+
+        if (dragging) {
+            drawSlideBar(painter, x, y, width, height,QColor("#000000"), QColor("#D0D0D0"),QColor("#E1E1E1"));
+        } else {
+            drawSlideBar(painter, x, y, width, height,QColor("#888888"), QColor("#D0D0D0"),QColor("#E1E1E1"));
+        }
+    } else {
+            drawSlideBar(painter, x, y, width, height,QColor("#BBBBBB"), QColor("#D0D0D0"),QColor("#E1E1E1"));
+    }
+
 
 
 
     // draw filled blueish slide area
-    drawSlideBar(painter, x, grabHandleYPositionTop, width, grabHandleYPositionBottom-grabHandleYPositionTop,QColor("#BBBBBB"), QColor("#5C96C5"),QColor("#76ABD3"));
+    if (sliderBarHighlighted) {
+        if (dragging) {
+            drawSlideBar(painter, x, grabHandleYPositionTop, width, grabHandleYPositionBottom-grabHandleYPositionTop,QColor("#000000"), QColor("#679ED2"),QColor("#679ED2"));
+        } else {
+            drawSlideBar(painter, x, grabHandleYPositionTop, width, grabHandleYPositionBottom-grabHandleYPositionTop,QColor("#666666"), QColor("#679ED2"),QColor("#679ED2"));
+        }
+    } else {
+        drawSlideBar(painter, x, grabHandleYPositionTop, width, grabHandleYPositionBottom-grabHandleYPositionTop,QColor("#BBBBBB"), QColor("#679ED2"),QColor("#76ABD3"));
+    }
 
     // Draw Circles for Min Value
 
@@ -256,11 +274,18 @@ void QRangeSlider::paintSlider(QPainter* painter, int x, int y , int width, int 
     // Draw Circle for Max Value
     drawGrabHandle(painter, x+width/2, grabHandleYPositionBottom, circleRadius, hightlightBottomGrabHandle);
 
-
+/*
+    if (sliderBarHighlighted) {
+        QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+        effect->setBlurRadius(5);
+        this->setGraphicsEffect(effect);
+    } else {
+        QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
+        effect->setBlurRadius(0);
+        this->setGraphicsEffect(effect);
+    }
+*/
     /*
-    QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect();
-    effect->setBlurRadius(5);
-    this->setGraphicsEffect(effect);
     */
 
 
@@ -377,55 +402,40 @@ void QRangeSlider::mouseMoveEvent(QMouseEvent *event) {
 
 
 
-        /*
-        if (abs( grabHandleYPositionTop-(y+slideBarStartY)) <
-            abs(grabHandleYPositionBottom-(y+slideBarStartY))
-           )
-            grabHandleYPositionTop    = y+slideBarStartY;
-        else
-            grabHandleYPositionBottom = y+slideBarStartY;
-
-        centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
-        centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
-
-        double newValTop    = (double)(grabHandleYPositionTop-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
-        double newValBottom = (double)(grabHandleYPositionBottom-slideBarStartY)*(maxVal-minVal)/(double) this->slideBarHeight+minVal;
-
-        if (this->minValDisplayedOnTop) {
-            this->currentSetTopVal = newValTop;
-            this->currentSetBottomVal = newValBottom;
-        } else {
-            this->currentSetTopVal = newValBottom;
-            this->currentSetBottomVal = newValTop;
-        }
-        */
-
-        // The following code has been amended to snap in to specific values...
-        // Commented out as it is causing problems when distances from position y to min and max are equal
-        /*
-        grabHandleYPositionTop = this->getYPositionForVal(this->currentSetTopVal, true)-circleRadius;
-        grabHandleYPositionBottom = this->getYPositionForVal(this->currentSetBottomVal, true)-circleRadius;
-        centerTopVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2, grabHandleYPositionTop); // Store position for Mouse Hit Test
-        centerBottomVal=QPointF(this->xPositionSliderBar+this->sliderWidth/2,grabHandleYPositionBottom);
-        */
-
-        // informObserversMinMaxValChanged();
 
 
         this->repaint();
     }
 
-    if (this->mousePressed && !topValGrab && !bottomValGrab) {
+    if (event->pos().x()>this->xPositionSliderBar && event->pos().x()<this->xPositionSliderBar+this->sliderWidth) {
+        sliderBarHighlighted = true;
+
+        this->repaint();
+    } else {
+        sliderBarHighlighted = false;
+
+        this->repaint();
+    }
+
+    if (this->mousePressed && !topValGrab && !bottomValGrab && (sliderBarHighlighted || dragging)) {
 //        ((ParallelCoordinatesWidget<WIDGET_DATA_TYPE>*)this->parent())->
 //        QPointF res = this->mapFromParent(QPoint(mouseX, mouseY));
-        QPointF res = this->mapTo(this->parentWidget(), QPoint(mouseX/*-this->width()/2*/, mouseY));
 
-        this->move(res.x()-(this->width()/2), this->pos().y());
+        this->setCursor(Qt::SizeHorCursor);
+
+        dragging = true;
+
+        QPointF res = this->mapTo(this->parentWidget(), QPoint(mouseX, mouseY));
+
+        this->move(res.x()-lastMouseClickX, this->pos().y());
 
         //this->recalcPositions();
 //        this->repaint();
 
         std::cout << "Moving to:" << mouseX << " " << mouseY << std::endl;
+    } else {
+        dragging = false;
+        this->setCursor(Qt::ArrowCursor);
     }
 
 
@@ -514,6 +524,9 @@ void QRangeSlider::informObserversMinMaxValChanged() {
 void QRangeSlider::mousePressEvent(QMouseEvent *event) {
     if (event->buttons() == Qt::LeftButton) {
         mousePressed = true;
+
+        lastMouseClickX = event->pos().x();
+
 
 //        deselectNeighbours();
         informObserversTextBoxFocused();
@@ -628,7 +641,7 @@ void QRangeSlider::mouseDoubleClickEvent(QMouseEvent * event) {
 
 void QRangeSlider::mouseReleaseEvent(QMouseEvent *event) {
     mousePressed=false;
-
+    dragging = false;
     bottomValGrab = false;
     topValGrab = false;
 

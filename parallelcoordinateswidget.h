@@ -46,6 +46,9 @@ class ParallelCoordinatesWidget : public QWidget,
                                   public ParallelCoordinatesWorkerObserver
 {
 private:
+    const int marginBottom = 50;
+
+    std::vector<double> sliderRangeDiffs;
 
     ParallelCoordinatesWorker<T> worker;
 
@@ -124,7 +127,7 @@ ParallelCoordinatesWidget<T>::ParallelCoordinatesWidget(QWidget *parent): QWidge
         this->slidersUnordered.push_back(aSlider);
 
 
-        aSlider->setGeometry(QRect(0+ singleWidth*i,0,singleWidth,parent->height()));
+        aSlider->setGeometry(QRect(0+ singleWidth*i,0,singleWidth,parent->height()-marginBottom));
 
         //hLayout->addWidget(aSlider);
 
@@ -228,6 +231,15 @@ void ParallelCoordinatesWidget<T>::mouseMoveEvent(QMouseEvent *event) {
             //slider->unsetHighlights();
         }
     }
+
+    // Remember diffs
+
+    sliderRangeDiffs.clear();
+    for (int i=0; i<nrOfDimensions; i++) {
+        sliderOrdersNrs[i];
+        sliderRangeDiffs.push_back(static_cast<double>(sliders[sliderOrdersNrs[i]]->pos().x())/static_cast<double>(this->parentWidget()->width()));
+    }
+
 }
 
 
@@ -430,6 +442,21 @@ void ParallelCoordinatesWidget<T>::resizeEvent(QResizeEvent* event) {
         hBoxLayout->addWidget(slidersUnordered[sliderOrdersNrs[idx]]);
     }*/
 
+
+
+    int singleWidth = this->parentWidget()->width() / nrOfDimensions;
+
+
+    std::vector<double> xVals;
+    std::vector<double> diffs;
+
+
+
+    if (sliderRangeDiffs.size()==nrOfDimensions)
+    for (int i=0; i<nrOfDimensions; i++) {
+        this->slidersUnordered[i]->setGeometry(QRect(sliderRangeDiffs[i]*this->parentWidget()->width(),0,singleWidth,parentWidget()->height()-marginBottom));
+
+    }
 
     calcDataInBackground();
 }

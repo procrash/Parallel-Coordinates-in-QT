@@ -57,6 +57,11 @@ public:
 
 private:
 
+    int lastMouseClickX{0};
+    bool sliderBarHighlighted{false};
+    bool dragging{false};
+
+
     QString dimLabelText ;
     vector<QRangeSliderObserver*> observers;
 
